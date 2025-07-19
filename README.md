@@ -22,7 +22,7 @@ A production-ready example demonstrating how to execute token swaps on Base Camp
 
 ```bash
 # Clone the repository
-git clone https://github.com/summitx-finance/summitx-swap-example.git
+git clone https://github.com/summitx-finance/summitx-example.git
 cd summitx-swap-example
 
 # Install dependencies
