@@ -70,9 +70,14 @@ async function main() {
     args: [account.address],
   });
 
-  logger.info(`USDC Balance: ${formatUnits(usdcBalance, 6)}`);
+  logger.info(
+    `USDC Balance: ${formatUnits(
+      usdcBalance,
+      baseCampTestnetTokens.usdc.decimals
+    )}`
+  );
 
-  if (usdcBalance < parseUnits("0.5", 6)) {
+  if (usdcBalance < parseUnits("0.5", baseCampTestnetTokens.usdc.decimals)) {
     logger.error("Insufficient USDC balance. Need at least 0.5 USDC");
     process.exit(1);
   }
@@ -122,7 +127,10 @@ async function main() {
       address: account.address,
     });
     logger.info(
-      `Initial CAMP balance: ${formatUnits(initialNativeBalance, 18)}`
+      `Initial CAMP balance: ${formatUnits(
+        initialNativeBalance,
+        basecampTestnet.nativeCurrency.decimals
+      )}`
     );
 
     // Approve USDC with waiting period
@@ -131,7 +139,7 @@ async function main() {
       publicClient,
       baseCampTestnetTokens.usdc.address as Address,
       SMART_ROUTER_ADDRESS as Address,
-      parseUnits(swapAmount, 6),
+      parseUnits(swapAmount, baseCampTestnetTokens.usdc.decimals),
       "USDC",
       3000 // 3 second wait after approval
     );
@@ -155,7 +163,12 @@ async function main() {
       functionName: "balanceOf",
       args: [account.address],
     });
-    logger.info(`WCAMP balance before: ${formatUnits(wcampBalanceBefore, 18)}`);
+    logger.info(
+      `WCAMP balance before: ${formatUnits(
+        wcampBalanceBefore,
+        baseCampTestnetTokens.wcamp.decimals
+      )}`
+    );
 
     const swapHash = await walletClient.sendTransaction({
       to: SMART_ROUTER_ADDRESS as Address,
@@ -187,7 +200,10 @@ async function main() {
     ]);
 
     logger.info(
-      `WCAMP balance after swap: ${formatUnits(wcampBalanceAfter, 18)}`
+      `WCAMP balance after swap: ${formatUnits(
+        wcampBalanceAfter,
+        baseCampTestnetTokens.wcamp.decimals
+      )}`
     );
     const wcampReceived = wcampBalanceAfter - wcampBalanceBefore;
 
@@ -196,7 +212,7 @@ async function main() {
       logger.info(
         `Received ${formatUnits(
           wcampReceived,
-          18
+          baseCampTestnetTokens.wcamp.decimals
         )} WCAMP, unwrapping to native CAMP...`
       );
 
@@ -238,15 +254,24 @@ async function main() {
       receipt.gasUsed * receipt.effectiveGasPrice;
 
     logger.success("Balance changes:", {
-      USDC: `${formatUnits(usdcBalance, 6)} → ${formatUnits(
+      USDC: `${formatUnits(
+        usdcBalance,
+        baseCampTestnetTokens.usdc.decimals
+      )} → ${formatUnits(
         finalUsdcBalance,
-        6
+        baseCampTestnetTokens.usdc.decimals
       )}`,
-      "Native CAMP": `${formatUnits(initialNativeBalance, 18)} → ${formatUnits(
+      "Native CAMP": `${formatUnits(
+        initialNativeBalance,
+        basecampTestnet.nativeCurrency.decimals
+      )} → ${formatUnits(
         finalNativeBalance,
-        18
+        basecampTestnet.nativeCurrency.decimals
       )}`,
-      "Approx CAMP received": formatUnits(nativeReceived, 18),
+      "Approx CAMP received": formatUnits(
+        nativeReceived,
+        basecampTestnet.nativeCurrency.decimals
+      ),
     });
   } catch (error: any) {
     if (error?.message?.includes("429")) {

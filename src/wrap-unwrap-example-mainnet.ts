@@ -9,7 +9,11 @@ import {
   type Hex,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { campMainnet, WCAMP_ADDRESS } from "./config/camp-mainnet";
+import {
+  campMainnet,
+  campMainnetTokens,
+  WCAMP_ADDRESS,
+} from "./config/camp-mainnet";
 import { logger } from "./utils/logger";
 
 config();
@@ -81,14 +85,22 @@ async function main() {
     });
 
     logger.info("Current balances:", {
-      nativeCAMP: formatUnits(nativeBalance, 18),
-      wrappedCAMP: formatUnits(wethBalance, 18),
+      nativeCAMP: formatUnits(
+        nativeBalance,
+        campMainnet.nativeCurrency.decimals
+      ),
+      wrappedCAMP: formatUnits(wethBalance, campMainnetTokens.wcamp.decimals),
     });
 
     logger.header("1. Wrapping Native CAMP to WCAMP");
 
-    const wrapAmount = parseUnits("0.01", 18);
-    logger.info(`Wrapping ${formatUnits(wrapAmount, 18)} CAMP...`);
+    const wrapAmount = parseUnits("0.01", campMainnet.nativeCurrency.decimals);
+    logger.info(
+      `Wrapping ${formatUnits(
+        wrapAmount,
+        campMainnet.nativeCurrency.decimals
+      )} CAMP...`
+    );
 
     const wrapHash = await walletClient.writeContract({
       address: WCAMP_ADDRESS as Address,
@@ -114,14 +126,24 @@ async function main() {
       args: [account.address],
     });
 
-    logger.info(`New WCAMP balance: ${formatUnits(newWethBalance, 18)}`);
+    logger.info(
+      `New WCAMP balance: ${formatUnits(
+        newWethBalance,
+        campMainnetTokens.wcamp.decimals
+      )}`
+    );
 
     logger.header("2. Unwrapping WCAMP to Native CAMP");
 
-    const unwrapAmount = parseUnits("0.005", 18);
+    const unwrapAmount = parseUnits("0.005", campMainnetTokens.wcamp.decimals);
 
     if (newWethBalance >= unwrapAmount) {
-      logger.info(`Unwrapping ${formatUnits(unwrapAmount, 18)} WCAMP...`);
+      logger.info(
+        `Unwrapping ${formatUnits(
+          unwrapAmount,
+          campMainnetTokens.wcamp.decimals
+        )} WCAMP...`
+      );
 
       const unwrapHash = await walletClient.writeContract({
         address: WCAMP_ADDRESS as Address,
@@ -152,8 +174,14 @@ async function main() {
       });
 
       logger.success("Final balances:", {
-        nativeCAMP: formatUnits(finalNativeBalance, 18),
-        wrappedCAMP: formatUnits(finalWethBalance, 18),
+        nativeCAMP: formatUnits(
+          finalNativeBalance,
+          campMainnet.nativeCurrency.decimals
+        ),
+        wrappedCAMP: formatUnits(
+          finalWethBalance,
+          campMainnetTokens.wcamp.decimals
+        ),
       });
     } else {
       logger.warn("Insufficient WCAMP balance for unwrapping");
@@ -162,16 +190,21 @@ async function main() {
     logger.header("3. Advanced: Batch Wrap Operations");
 
     const batchWrapAmounts = [
-      parseUnits("0.001", 18),
-      parseUnits("0.002", 18),
-      parseUnits("0.003", 18),
+      parseUnits("0.001", campMainnet.nativeCurrency.decimals),
+      parseUnits("0.002", campMainnet.nativeCurrency.decimals),
+      parseUnits("0.003", campMainnet.nativeCurrency.decimals),
     ];
 
     logger.info("Executing batch wrap operations...");
 
     for (let i = 0; i < batchWrapAmounts.length; i++) {
       const amount = batchWrapAmounts[i];
-      logger.info(`Batch wrap ${i + 1}: ${formatUnits(amount, 18)} CAMP`);
+      logger.info(
+        `Batch wrap ${i + 1}: ${formatUnits(
+          amount,
+          campMainnet.nativeCurrency.decimals
+        )} CAMP`
+      );
 
       const hash = await walletClient.writeContract({
         address: WCAMP_ADDRESS as Address,
@@ -193,7 +226,10 @@ async function main() {
     });
 
     logger.success(
-      `Total WCAMP after batch: ${formatUnits(finalBatchWethBalance, 18)}`
+      `Total WCAMP after batch: ${formatUnits(
+        finalBatchWethBalance,
+        campMainnetTokens.wcamp.decimals
+      )}`
     );
 
     logger.header("4. Reading WETH Contract State");
@@ -204,7 +240,10 @@ async function main() {
       functionName: "totalSupply",
     });
 
-    logger.info("WCAMP Total Supply:", formatUnits(totalSupply, 18));
+    logger.info(
+      "WCAMP Total Supply:",
+      formatUnits(totalSupply, campMainnetTokens.wcamp.decimals)
+    );
 
     logger.success("🎉 Wrap/Unwrap example completed successfully!");
   } catch (error: any) {

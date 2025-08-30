@@ -55,9 +55,16 @@ async function main() {
   const nativeBalance = await publicClient.getBalance({
     address: account.address,
   });
-  logger.info(`Native CAMP balance: ${formatUnits(nativeBalance, 18)}`);
+  logger.info(
+    `Native CAMP balance: ${formatUnits(
+      nativeBalance,
+      basecampTestnet.nativeCurrency.decimals
+    )}`
+  );
 
-  if (nativeBalance < parseUnits("0.1", 18)) {
+  if (
+    nativeBalance < parseUnits("0.1", basecampTestnet.nativeCurrency.decimals)
+  ) {
     logger.error("Insufficient CAMP balance. Need at least 0.1 CAMP");
     process.exit(1);
   }
@@ -111,10 +118,16 @@ async function main() {
     });
 
     // For native token swap, set the value
-    const nativeValue = parseUnits(swapAmount, 18);
+    const nativeValue = parseUnits(
+      swapAmount,
+      basecampTestnet.nativeCurrency.decimals
+    );
 
     logger.info(
-      `Sending ${formatUnits(nativeValue, 18)} CAMP with transaction`
+      `Sending ${formatUnits(
+        nativeValue,
+        basecampTestnet.nativeCurrency.decimals
+      )} CAMP with transaction`
     );
 
     // Execute swap
@@ -151,7 +164,10 @@ async function main() {
         args: [account.address],
       });
 
-      logger.success("New USDC balance:", formatUnits(usdcBalance, 6));
+      logger.success(
+        "New USDC balance:",
+        formatUnits(usdcBalance, baseCampTestnetTokens.usdc.decimals)
+      );
     } else {
       logger.error("❌ Swap failed");
     }

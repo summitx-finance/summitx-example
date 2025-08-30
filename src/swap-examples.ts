@@ -66,7 +66,12 @@ async function checkAndApproveToken(
   });
 
   if (allowance < amount) {
-    logger.info(`Approving ${formatUnits(amount, 18)} tokens...`);
+    logger.info(
+      `Approving ${formatUnits(
+        amount,
+        basecampTestnet.nativeCurrency.decimals
+      )} tokens...`
+    );
     const hash = await walletClient.writeContract({
       address: tokenAddress,
       abi: ERC20_ABI,
@@ -121,12 +126,12 @@ async function getBalances(publicClient: any, address: Address) {
   ]);
 
   return {
-    native: formatUnits(nativeBalance, 18),
-    usdc: formatUnits(usdcBalance, 6),
-    usdt: formatUnits(usdtBalance, 6),
-    weth: formatUnits(wethBalance, 18),
-    wbtc: formatUnits(wbtcBalance, 18),
-    dai: formatUnits(daiBalance, 18),
+    native: formatUnits(nativeBalance, basecampTestnet.nativeCurrency.decimals),
+    usdc: formatUnits(usdcBalance, baseCampTestnetTokens.usdc.decimals),
+    usdt: formatUnits(usdtBalance, baseCampTestnetTokens.usdt.decimals),
+    weth: formatUnits(wethBalance, baseCampTestnetTokens.weth.decimals),
+    wbtc: formatUnits(wbtcBalance, baseCampTestnetTokens.wbtc.decimals),
+    dai: formatUnits(daiBalance, baseCampTestnetTokens.dai.decimals),
   };
 }
 
@@ -143,7 +148,7 @@ async function executeSwap(
     logger.info(
       `Sending ${formatUnits(
         BigInt(methodParameters.value),
-        18
+        basecampTestnet.nativeCurrency.decimals
       )} CAMP with transaction`
     );
   }
@@ -253,7 +258,10 @@ async function main() {
       });
 
       // For native token swap, ensure value is set
-      const swapValue = parseUnits(nativeToErc20Amount, 18); // Native CAMP has 18 decimals
+      const swapValue = parseUnits(
+        nativeToErc20Amount,
+        basecampTestnet.nativeCurrency.decimals
+      ); // Native CAMP has 18 decimals
       methodParameters.value = swapValue.toString();
 
       await executeSwap(
@@ -293,7 +301,7 @@ async function main() {
         walletClient,
         publicClient,
         baseCampTestnetTokens.usdc.address as Address,
-        parseUnits(erc20ToNativeAmount, 6),
+        parseUnits(erc20ToNativeAmount, baseCampTestnetTokens.usdc.decimals),
         account.address
       );
 
@@ -349,7 +357,7 @@ async function main() {
         walletClient,
         publicClient,
         baseCampTestnetTokens.usdc.address as Address,
-        parseUnits(erc20ToErc20Amount, 6),
+        parseUnits(erc20ToErc20Amount, baseCampTestnetTokens.usdc.decimals),
         account.address
       );
 
@@ -402,7 +410,7 @@ async function main() {
         walletClient,
         publicClient,
         baseCampTestnetTokens.weth.address as Address,
-        parseUnits(wethToWbtcAmount, 18),
+        parseUnits(wethToWbtcAmount, baseCampTestnetTokens.weth.decimals),
         account.address
       );
 
@@ -455,7 +463,7 @@ async function main() {
         walletClient,
         publicClient,
         baseCampTestnetTokens.usdc.address as Address,
-        parseUnits(usdcToDaiAmount, 6),
+        parseUnits(usdcToDaiAmount, baseCampTestnetTokens.usdc.decimals),
         account.address
       );
 
