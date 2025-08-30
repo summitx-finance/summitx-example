@@ -15,15 +15,18 @@ import { privateKeyToAccount } from "viem/accounts";
 import {
   basecampTestnet,
   baseCampTestnetTokens,
-  SMART_ROUTER_ADDRESS,
-} from "./config/base-testnet";
-import { TokenQuoter } from "./quoter/token-quoter";
-import { logger } from "./utils/logger";
+} from "../config/base-testnet";
+import { getContractsForChain } from "../config/chains";
+import { ChainId } from "@summitx/chains";
+import { TokenQuoter } from "../quoter/token-quoter";
+import { logger } from "../utils/logger";
 
 config();
 
 async function testSimpleSwap() {
   logger.header("🧪 Test Simple Native Swap");
+
+  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
 
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");
@@ -86,7 +89,7 @@ async function testSimpleSwap() {
   const nativeValue = parseUnits(swapAmount, 18);
   
   logger.info("Transaction details:");
-  logger.info(`To: ${SMART_ROUTER_ADDRESS}`);
+  logger.info(`To: ${contracts.SMART_ROUTER}`);
   logger.info(`Value (wei): ${nativeValue.toString()}`);
   logger.info(`Value (CAMP): ${formatEther(nativeValue)}`);
   
@@ -94,7 +97,7 @@ async function testSimpleSwap() {
     // Method 1: Using string value
     logger.info("Attempting swap with string value...");
     const tx1 = await walletClient.sendTransaction({
-      to: SMART_ROUTER_ADDRESS as Address,
+      to: contracts.SMART_ROUTER as Address,
       data: methodParameters.calldata as Hex,
       value: nativeValue, // Pass BigInt directly
     });
@@ -115,7 +118,7 @@ async function testSimpleSwap() {
     logger.info("Retrying with explicit gas limit...");
     try {
       const tx2 = await walletClient.sendTransaction({
-        to: SMART_ROUTER_ADDRESS as Address,
+        to: contracts.SMART_ROUTER as Address,
         data: methodParameters.calldata as Hex,
         value: nativeValue,
         gas: 200000n, // Lower gas limit

@@ -11,7 +11,7 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { NFT_POSITION_MANAGER_ABI } from "../config/abis";
-import { basecampTestnet } from "../config/base-testnet";
+import { campMainnet } from "../config/camp-mainnet";
 import { getContractsForChain, getDeadline } from "../config/chains";
 import { LiquidityHelpers } from "../utils/liquidity-helpers";
 import { logger } from "../utils/logger";
@@ -19,7 +19,7 @@ import { logger } from "../utils/logger";
 config();
 
 async function main() {
-  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
+  const contracts = getContractsForChain(ChainId.BASECAMP);
 
   logger.header("💧 Remove V3 Liquidity");
   logger.info("Remove liquidity from Uniswap V3 concentrated positions");
@@ -33,14 +33,14 @@ async function main() {
   const account = privateKeyToAccount(process.env.PRIVATE_KEY as Hex);
 
   const publicClient = createPublicClient({
-    chain: basecampTestnet,
-    transport: http(basecampTestnet.rpcUrls.default.http[0]),
+    chain: campMainnet,
+    transport: http(campMainnet.rpcUrls.default.http[0]),
   });
 
   const walletClient = createWalletClient({
     account,
-    chain: basecampTestnet,
-    transport: http(basecampTestnet.rpcUrls.default.http[0]),
+    chain: campMainnet,
+    transport: http(campMainnet.rpcUrls.default.http[0]),
   });
 
   logger.info(`Wallet address: ${account.address}`);
@@ -50,7 +50,7 @@ async function main() {
     const positions = await LiquidityHelpers.getUserV3Positions(
       publicClient,
       account.address,
-      ChainId.BASECAMP_TESTNET
+      ChainId.BASECAMP
     );
 
     if (positions.length === 0) {
@@ -102,7 +102,7 @@ async function main() {
         pos.token0,
         pos.token1,
         pos.fee,
-        ChainId.BASECAMP_TESTNET
+        ChainId.BASECAMP
       );
 
       if (poolInfo) {

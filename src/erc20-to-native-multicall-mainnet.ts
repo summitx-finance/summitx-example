@@ -15,9 +15,9 @@ import { privateKeyToAccount } from "viem/accounts";
 import {
   campMainnet,
   campMainnetTokens,
-  SMART_ROUTER_ADDRESS,
-  WCAMP_ADDRESS,
 } from "./config/camp-mainnet";
+import { getContractsForChain } from "./config/chains";
+import { ChainId } from "@summitx/chains";
 import { TokenQuoter } from "./quoter/token-quoter-mainnet";
 import { logger } from "./utils/logger";
 import {
@@ -95,6 +95,8 @@ async function main() {
   logger.info("Swapping USDC to CAMP (native) in a single transaction");
   logger.divider();
 
+  const contracts = getContractsForChain(ChainId.BASECAMP);
+
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");
     process.exit(1);
@@ -115,20 +117,24 @@ async function main() {
 
   logger.info(`Wallet address: ${account.address}`);
 
-  // Check USDC balance
-  const usdcBalance = await publicClient.readContract({
-    address: campMainnetTokens.usdc.address as Address,
+  // Define tokens to use throughout the file
+  const INPUT_TOKEN = campMainnetTokens.usdc;
+  const OUTPUT_TOKEN = campMainnetTokens.wcamp; // WCAMP for native swaps
+
+  // Check input token balance
+  const inputBalance = await publicClient.readContract({
+    address: INPUT_TOKEN.address as Address,
     abi: ERC20_ABI,
     functionName: "balanceOf",
     args: [account.address],
   });
 
   logger.info(
-    `USDC Balance: ${formatUnits(usdcBalance, campMainnetTokens.usdc.decimals)}`
+    `${INPUT_TOKEN.symbol} Balance: ${formatUnits(inputBalance, INPUT_TOKEN.decimals)}`
   );
 
-  if (usdcBalance < parseUnits("0.5", campMainnetTokens.usdc.decimals)) {
-    logger.error("Insufficient USDC balance. Need at least 0.5 USDC");
+  if (inputBalance < parseUnits("0.5", INPUT_TOKEN.decimals)) {
+    logger.error(`Insufficient ${INPUT_TOKEN.symbol} balance. Need at least 0.5 ${INPUT_TOKEN.symbol}`);
     process.exit(1);
   }
 
@@ -147,26 +153,26 @@ async function main() {
     await delay(2000);
 
     // Define swap amount
-    const swapAmount = "0.5"; // 0.5 USDC
+    const swapAmount = "0.5"; // 0.5 of input token
 
-    logger.info(`Getting quote for ${swapAmount} USDC → CAMP...`);
+    logger.info(`Getting quote for ${swapAmount} ${INPUT_TOKEN.symbol} → CAMP...`);
 
     // Get quote - swap to WCAMP first
     const quote = await quoter.getQuote(
-      campMainnetTokens.usdc,
-      campMainnetTokens.wcamp,
+      INPUT_TOKEN,
+      OUTPUT_TOKEN,
       swapAmount,
       TradeType.EXACT_INPUT,
       false
     );
 
     if (!quote || !quote.rawTrade) {
-      logger.error("No route found for USDC → WCAMP");
+      logger.error(`No route found for ${INPUT_TOKEN.symbol} → WCAMP`);
       process.exit(1);
     }
 
     logger.success("Quote received:", {
-      input: `${swapAmount} USDC`,
+      input: `${swapAmount} ${INPUT_TOKEN.symbol}`,
       output: `${quote.outputAmount} WCAMP`,
       priceImpact: quote.priceImpact,
       route: quote.route,
@@ -176,7 +182,7 @@ async function main() {
     const [initialNativeBalance, wcampBalanceBefore] = await Promise.all([
       publicClient.getBalance({ address: account.address }),
       publicClient.readContract({
-        address: WCAMP_ADDRESS as Address,
+        address: contracts.WCAMP as Address,
         abi: ERC20_ABI,
         functionName: "balanceOf",
         args: [account.address],
@@ -192,18 +198,18 @@ async function main() {
     logger.info(
       `Initial WCAMP balance: ${formatUnits(
         wcampBalanceBefore,
-        campMainnetTokens.wcamp.decimals
+        OUTPUT_TOKEN.decimals
       )}`
     );
 
-    // Approve USDC with waiting period
+    // Approve input token with waiting period
     await approveTokenWithWait(
       walletClient,
       publicClient,
-      campMainnetTokens.usdc.address as Address,
-      SMART_ROUTER_ADDRESS as Address,
-      parseUnits(swapAmount, campMainnetTokens.usdc.decimals),
-      "USDC",
+      INPUT_TOKEN.address as Address,
+      contracts.SMART_ROUTER as Address,
+      parseUnits(swapAmount, INPUT_TOKEN.decimals),
+      INPUT_TOKEN.symbol,
       3000 // 3 second wait after approval
     );
 
@@ -212,7 +218,7 @@ async function main() {
     const swapParams = SwapRouter.swapCallParameters(trade, {
       slippageTolerance: new Percent(100, 10000), // 1%
       deadline: Math.floor(Date.now() / 1000) + 60 * 20,
-      recipient: SMART_ROUTER_ADDRESS as Address, // Send WCAMP to router for unwrapping
+      recipient: contracts.SMART_ROUTER as Address, // Send WCAMP to router for unwrapping
     });
 
     // Calculate minimum amount out with slippage
@@ -236,7 +242,7 @@ async function main() {
 
     // Execute multicall
     const txHash = await walletClient.writeContract({
-      address: SMART_ROUTER_ADDRESS as Address,
+      address: contracts.SMART_ROUTER as Address,
       abi: ROUTER_MULTICALL_ABI,
       functionName: "multicall",
       args: [multicallData],
@@ -255,13 +261,13 @@ async function main() {
       await Promise.all([
         publicClient.getBalance({ address: account.address }),
         publicClient.readContract({
-          address: WCAMP_ADDRESS as Address,
+          address: contracts.WCAMP as Address,
           abi: ERC20_ABI,
           functionName: "balanceOf",
           args: [account.address],
         }),
         publicClient.readContract({
-          address: campMainnetTokens.usdc.address as Address,
+          address: INPUT_TOKEN.address as Address,
           abi: ERC20_ABI,
           functionName: "balanceOf",
           args: [account.address],
@@ -272,14 +278,14 @@ async function main() {
     const nativeReceived = finalNativeBalance - initialNativeBalance;
 
     logger.success("Balance changes:", {
-      USDC: `${formatUnits(
-        usdcBalance,
-        campMainnetTokens.usdc.decimals
-      )} → ${formatUnits(finalUsdcBalance, campMainnetTokens.usdc.decimals)}`,
+      [INPUT_TOKEN.symbol]: `${formatUnits(
+        inputBalance,
+        INPUT_TOKEN.decimals
+      )} → ${formatUnits(finalUsdcBalance, INPUT_TOKEN.decimals)}`,
       WCAMP: `${formatUnits(
         wcampBalanceBefore,
-        campMainnetTokens.wcamp.decimals
-      )} → ${formatUnits(wcampBalanceAfter, campMainnetTokens.wcamp.decimals)}`,
+        OUTPUT_TOKEN.decimals
+      )} → ${formatUnits(wcampBalanceAfter, OUTPUT_TOKEN.decimals)}`,
       "Native CAMP": `${formatUnits(
         initialNativeBalance,
         campMainnet.nativeCurrency.decimals

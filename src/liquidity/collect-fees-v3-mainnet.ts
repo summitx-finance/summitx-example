@@ -11,7 +11,7 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { NFT_POSITION_MANAGER_ABI } from "../config/abis";
-import { basecampTestnet } from "../config/base-testnet";
+import { campMainnet } from "../config/camp-mainnet";
 import { getContractsForChain } from "../config/chains";
 import { LiquidityHelpers } from "../utils/liquidity-helpers";
 import { logger } from "../utils/logger";
@@ -19,8 +19,8 @@ import { logger } from "../utils/logger";
 config();
 
 async function main() {
-  const chainId = ChainId.BASECAMP_TESTNET;
-  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
+  const chainId = ChainId.BASECAMP;
+  const contracts = getContractsForChain(chainId);
 
   logger.header("💰 Collect V3 Fees");
   logger.info("Collect accumulated fees from Uniswap V3 positions");
@@ -34,14 +34,14 @@ async function main() {
   const account = privateKeyToAccount(process.env.PRIVATE_KEY as Hex);
 
   const publicClient = createPublicClient({
-    chain: basecampTestnet,
-    transport: http(basecampTestnet.rpcUrls.default.http[0]),
+    chain: campMainnet,
+    transport: http(campMainnet.rpcUrls.default.http[0]),
   });
 
   const walletClient = createWalletClient({
     account,
-    chain: basecampTestnet,
-    transport: http(basecampTestnet.rpcUrls.default.http[0]),
+    chain: campMainnet,
+    transport: http(campMainnet.rpcUrls.default.http[0]),
   });
 
   logger.info(`Wallet address: ${account.address}`);

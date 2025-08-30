@@ -1,3 +1,4 @@
+import { ChainId } from "@summitx/chains";
 import { config } from "dotenv";
 import readlineSync from "readline-sync";
 import {
@@ -10,14 +11,12 @@ import {
   type Hex,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { basecampTestnet } from "../config/base-testnet";
+import { campMainnet } from "../config/camp-mainnet";
 import { getContractsForChain } from "../config/chains";
-import { ChainId } from "@summitx/chains";
 import { logger } from "../utils/logger";
-import { waitForTransaction, delay } from "../utils/transaction-helpers";
+import { delay, waitForTransaction } from "../utils/transaction-helpers";
 
 config();
-
 
 // ABIs
 const ERC20_ABI = parseAbi([
@@ -203,9 +202,12 @@ async function checkAndApproveLP(
       args: [contracts.V2_ROUTER as Address, amount],
     });
     await waitForTransaction(publicClient, hash, "LP token approval");
-    
+
     // Add a delay after approval to ensure the transaction is fully processed
-    await delay(3000, "⏳ Waiting 3 seconds after approval before proceeding...");
+    await delay(
+      3000,
+      "⏳ Waiting 3 seconds after approval before proceeding..."
+    );
   } else {
     logger.info("✅ LP tokens already approved");
   }
@@ -213,10 +215,10 @@ async function checkAndApproveLP(
 
 async function main() {
   logger.header("💧 Remove Liquidity V2 Example");
-  logger.info("Remove liquidity from V2 AMM pools on Base Camp Testnet");
+  logger.info("Remove liquidity from V2 AMM pools on Camp");
   logger.divider();
 
-  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
+  const contracts = getContractsForChain(ChainId.BASECAMP);
 
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");
@@ -226,18 +228,14 @@ async function main() {
   const account = privateKeyToAccount(process.env.PRIVATE_KEY as Hex);
 
   const publicClient = createPublicClient({
-    chain: basecampTestnet,
-    transport: http(
-      process.env.BASE_TESTNET_RPC_URL || "https://rpc-campnetwork.xyz"
-    ),
+    chain: campMainnet,
+    transport: http(campMainnet.rpcUrls.default.http[0]),
   });
 
   const walletClient = createWalletClient({
     account,
-    chain: basecampTestnet,
-    transport: http(
-      process.env.BASE_TESTNET_RPC_URL || "https://rpc-campnetwork.xyz"
-    ),
+    chain: campMainnet,
+    transport: http(campMainnet.rpcUrls.default.http[0]),
   });
 
   logger.info(`Wallet address: ${account.address}`);
@@ -446,8 +444,8 @@ async function main() {
 
       // Check received amounts
       const [newBalance0, newBalance1] = await Promise.all([
-        selectedPosition.token0.toLowerCase() === contracts.WCAMP.toLowerCase() &&
-        receiveNative
+        selectedPosition.token0.toLowerCase() ===
+          contracts.WCAMP.toLowerCase() && receiveNative
           ? publicClient.getBalance({ address: account.address })
           : publicClient.readContract({
               address: selectedPosition.token0,
@@ -455,8 +453,8 @@ async function main() {
               functionName: "balanceOf",
               args: [account.address],
             }),
-        selectedPosition.token1.toLowerCase() === contracts.WCAMP.toLowerCase() &&
-        receiveNative
+        selectedPosition.token1.toLowerCase() ===
+          contracts.WCAMP.toLowerCase() && receiveNative
           ? publicClient.getBalance({ address: account.address })
           : publicClient.readContract({
               address: selectedPosition.token1,

@@ -12,7 +12,7 @@ import {
   type Hex,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { basecampTestnet, baseCampTestnetTokens } from "../config/base-testnet";
+import { campMainnet, campMainnetTokens } from "../config/camp-mainnet";
 import { getContractsForChain } from "../config/chains";
 import { logger } from "../utils/logger";
 import { approveTokenWithWait } from "../utils/transaction-helpers";
@@ -84,8 +84,8 @@ async function getTokenInfo(
 
   return { address: tokenAddress, symbol, decimals, balance };
 }
-
-const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
+const chainId = ChainId.BASECAMP;
+const contracts = getContractsForChain(chainId);
 
 async function getPairInfo(publicClient: any, tokenAddress: Address) {
   // Native CAMP pairs use WCAMP internally
@@ -144,8 +144,6 @@ async function main() {
   logger.info("Add and remove liquidity using native CAMP directly");
   logger.divider();
 
-  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
-
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");
     process.exit(1);
@@ -154,30 +152,20 @@ async function main() {
   const account = privateKeyToAccount(process.env.PRIVATE_KEY as Hex);
 
   const publicClient = createPublicClient({
-    chain: basecampTestnet,
-    transport: http(
-      process.env.BASE_TESTNET_RPC_URL || "https://rpc-campnetwork.xyz"
-    ),
+    chain: campMainnet,
+    transport: http(campMainnet.rpcUrls.default.http[0]),
   });
 
   const walletClient = createWalletClient({
     account,
-    chain: basecampTestnet,
-    transport: http(
-      process.env.BASE_TESTNET_RPC_URL || "https://rpc-campnetwork.xyz"
-    ),
+    chain: campMainnet,
+    transport: http(campMainnet.rpcUrls.default.http[0]),
   });
 
   logger.info(`Wallet address: ${account.address}`);
 
   // Define native liquidity token pairs (excluding WCAMP since we're using native)
-  const NATIVE_PAIR_TOKENS = [
-    baseCampTestnetTokens.usdc,
-    baseCampTestnetTokens.usdt,
-    baseCampTestnetTokens.dai,
-    baseCampTestnetTokens.weth,
-    baseCampTestnetTokens.wbtc,
-  ];
+  const NATIVE_PAIR_TOKENS = [campMainnetTokens.usdc];
 
   try {
     // Get native CAMP balance

@@ -1,12 +1,16 @@
 import { SwapRouter } from "@summitx/smart-router/evm";
 import { Percent, TradeType } from "@summitx/swap-sdk-core";
 import { formatUnits, parseUnits } from "viem";
-import { baseCampTestnetTokens } from "./config/base-testnet";
-import { TokenQuoter } from "./quoter/token-quoter";
-import { logger } from "./utils/logger";
+import { baseCampTestnetTokens } from "../config/base-testnet";
+import { getContractsForChain } from "../config/chains";
+import { ChainId } from "@summitx/chains";
+import { TokenQuoter } from "../quoter/token-quoter";
+import { logger } from "../utils/logger";
 
 async function testNativeSwap() {
   logger.header("🧪 Testing Native CAMP Swap");
+
+  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
 
   const quoter = new TokenQuoter({
     rpcUrl: "https://rpc-campnetwork.xyz",

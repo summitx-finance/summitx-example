@@ -12,6 +12,8 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { baseCampTestnetTokens } from "../config/base-testnet";
+import { getContractsForChain } from "../config/chains";
+import { ChainId } from "@summitx/chains";
 import { TokenQuoter } from "../quoter/token-quoter";
 import { logger } from "../utils/logger";
 import { QuoteToTradeConverterV2 } from "../utils/quote-to-trade-converter-v2";
@@ -32,9 +34,6 @@ const CHAIN_CONFIG = {
   },
 };
 
-// Router address
-const SMART_ROUTER_ADDRESS =
-  "0x197b7c9fC5c8AeA84Ab2909Bf94f24370539722D" as Address;
 
 // ERC20 ABI for approval
 const ERC20_ABI = [
@@ -68,6 +67,8 @@ const ERC20_ABI = [
 ] as const;
 
 async function main() {
+  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
+
   logger.header("SummitX Swap Execution - Interface Style");
 
   // Check for private key
@@ -201,7 +202,7 @@ async function main() {
     );
 
     logger.info("Swap parameters built:", {
-      to: SMART_ROUTER_ADDRESS,
+      to: contracts.SMART_ROUTER,
       value: methodParameters.value,
       calldataLength: methodParameters.calldata.length,
     });
@@ -216,7 +217,7 @@ async function main() {
         address: inputTokenAddress,
         abi: ERC20_ABI,
         functionName: "allowance",
-        args: [account.address, SMART_ROUTER_ADDRESS],
+        args: [account.address, contracts.SMART_ROUTER],
       });
 
       if (currentAllowance < trade.inputAmount.quotient) {
@@ -226,7 +227,7 @@ async function main() {
           address: inputTokenAddress,
           abi: ERC20_ABI,
           functionName: "approve",
-          args: [SMART_ROUTER_ADDRESS, trade.inputAmount.quotient],
+          args: [contracts.SMART_ROUTER, trade.inputAmount.quotient],
         });
 
         logger.info(`Approval transaction: ${approvalTx}`);
@@ -247,7 +248,7 @@ async function main() {
 
     // Execute the swap
     const swapTx = await walletClient.sendTransaction({
-      to: SMART_ROUTER_ADDRESS as Address, // Ensure router address is used
+      to: contracts.SMART_ROUTER as Address, // Ensure router address is used
       data: methodParameters.calldata as Hex,
       value: BigInt(methodParameters.value),
       gas: 500000n,

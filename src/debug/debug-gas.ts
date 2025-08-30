@@ -1,9 +1,11 @@
 import { config } from "dotenv";
 import { createPublicClient, createWalletClient, formatEther, formatUnits, http, parseUnits, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { basecampTestnet, baseCampTestnetTokens, SMART_ROUTER_ADDRESS } from "./config/base-testnet";
-import { TokenQuoter } from "./quoter/token-quoter";
-import { logger } from "./utils/logger";
+import { basecampTestnet, baseCampTestnetTokens } from "../config/base-testnet";
+import { getContractsForChain } from "../config/chains";
+import { ChainId } from "@summitx/chains";
+import { TokenQuoter } from "../quoter/token-quoter";
+import { logger } from "../utils/logger";
 import { SwapRouter } from "@summitx/smart-router/evm";
 import { Percent, TradeType } from "@summitx/swap-sdk-core";
 
@@ -11,6 +13,8 @@ config();
 
 async function debugGas() {
   logger.header("🔍 Debug Gas Estimation");
+
+  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
 
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");
@@ -79,7 +83,7 @@ async function debugGas() {
 
   logger.divider();
   logger.info("Transaction parameters:");
-  logger.info(`To: ${SMART_ROUTER_ADDRESS}`);
+  logger.info(`To: ${contracts.SMART_ROUTER}`);
   logger.info(`Value: ${formatEther(BigInt(methodParameters.value))} CAMP`);
   logger.info(`Data length: ${methodParameters.calldata.length} bytes`);
 
@@ -87,7 +91,7 @@ async function debugGas() {
   try {
     const estimatedGas = await publicClient.estimateGas({
       account: account.address,
-      to: SMART_ROUTER_ADDRESS as `0x${string}`,
+      to: contracts.SMART_ROUTER as `0x${string}`,
       data: methodParameters.calldata as `0x${string}`,
       value: BigInt(methodParameters.value),
     });

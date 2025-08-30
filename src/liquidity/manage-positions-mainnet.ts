@@ -1,3 +1,4 @@
+import { ChainId } from "@summitx/chains";
 import { config } from "dotenv";
 import readlineSync from "readline-sync";
 import {
@@ -10,13 +11,11 @@ import {
   type Hex,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { basecampTestnet } from "../config/base-testnet";
+import { campMainnet } from "../config/camp-mainnet";
 import { getContractsForChain } from "../config/chains";
-import { ChainId } from "@summitx/chains";
 import { logger } from "../utils/logger";
 
 config();
-
 
 // ABIs
 const ERC20_ABI = parseAbi([
@@ -311,7 +310,8 @@ async function main() {
   logger.info("View and manage all your liquidity positions");
   logger.divider();
 
-  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
+  const chainId = ChainId.BASECAMP;
+  const contracts = getContractsForChain(chainId);
 
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");
@@ -321,18 +321,14 @@ async function main() {
   const account = privateKeyToAccount(process.env.PRIVATE_KEY as Hex);
 
   const publicClient = createPublicClient({
-    chain: basecampTestnet,
-    transport: http(
-      process.env.BASE_TESTNET_RPC_URL || "https://rpc-campnetwork.xyz"
-    ),
+    chain: campMainnet,
+    transport: http(campMainnet.rpcUrls.default.http[0]),
   });
 
   const walletClient = createWalletClient({
     account,
-    chain: basecampTestnet,
-    transport: http(
-      process.env.BASE_TESTNET_RPC_URL || "https://rpc-campnetwork.xyz"
-    ),
+    chain: campMainnet,
+    transport: http(campMainnet.rpcUrls.default.http[0]),
   });
 
   logger.info(`Wallet address: ${account.address}`);

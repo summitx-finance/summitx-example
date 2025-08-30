@@ -14,17 +14,15 @@ import { privateKeyToAccount } from "viem/accounts";
 import {
   basecampTestnet,
   baseCampTestnetTokens,
-  WCAMP_ADDRESS,
 } from "../config/base-testnet";
+import { getContractsForChain } from "../config/chains";
+import { ChainId } from "@summitx/chains";
 import { logger } from "../utils/logger";
 import { approveTokenWithWait, waitForTransaction, delay } from "../utils/transaction-helpers";
 import readlineSync from "readline-sync";
 
 config();
 
-// V3 contracts for Base Camp Testnet
-const NFT_POSITION_MANAGER = "0x86e08b14ABb30d4E19811EC5C42074b87f6E46b1";
-const V3_FACTORY_ADDRESS = "0x56e72729b46fc7a5C18C3333ACDA52cB57936022";
 
 // ABIs
 const ERC20_ABI = parseAbi([
@@ -162,6 +160,8 @@ async function main() {
   logger.info("Add concentrated liquidity to V3 pools on Base Camp Testnet");
   logger.divider();
 
+  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
+
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");
     process.exit(1);
@@ -187,8 +187,8 @@ async function main() {
   logger.info(`Wallet address: ${account.address}`);
 
   try {
-    // Get available tokens with fallback info
-    const tokens = [
+    // Define available tokens for V3 liquidity
+    const V3_LIQUIDITY_TOKENS = [
       { ...baseCampTestnetTokens.wcamp, fallbackSymbol: "wCAMP", fallbackDecimals: 18 },
       { ...baseCampTestnetTokens.usdc, fallbackSymbol: "MUSDC", fallbackDecimals: 6 },
       { ...baseCampTestnetTokens.usdt, fallbackSymbol: "MUSDT", fallbackDecimals: 6 },
@@ -196,6 +196,9 @@ async function main() {
       { ...baseCampTestnetTokens.weth, fallbackSymbol: "WETH", fallbackDecimals: 18 },
       { ...baseCampTestnetTokens.wbtc, fallbackSymbol: "WBTC", fallbackDecimals: 8 },
     ];
+
+    // Get available tokens with fallback info
+    const tokens = V3_LIQUIDITY_TOKENS;
 
     // Get token balances
     logger.info("\n📊 Checking available tokens:");
@@ -306,7 +309,7 @@ async function main() {
     try {
       logger.info(`Checking for pool: ${tokenA.symbol}/${tokenB.symbol} with fee ${selectedFeeTier.fee}`);
       const result = await publicClient.readContract({
-        address: V3_FACTORY_ADDRESS,
+        address: contracts.V3_FACTORY,
         abi: V3_FACTORY_ABI,
         functionName: "getPool",
         args: [tokenA.address, tokenB.address, selectedFeeTier.fee],
@@ -604,7 +607,7 @@ async function main() {
       walletClient,
       publicClient,
       tokenA.address,
-      NFT_POSITION_MANAGER as Address,
+      contracts.NFT_POSITION_MANAGER as Address,
       amount0Desired,
       tokenA.symbol,
       3000 // 3 second wait after approval
@@ -613,7 +616,7 @@ async function main() {
       walletClient,
       publicClient,
       tokenB.address,
-      NFT_POSITION_MANAGER as Address,
+      contracts.NFT_POSITION_MANAGER as Address,
       amount1Desired,
       tokenB.symbol,
       3000 // 3 second wait after approval
@@ -648,8 +651,8 @@ async function main() {
     }
 
     // Check if using native CAMP
-    const isToken0WCAMP = tokenA.address.toLowerCase() === WCAMP_ADDRESS.toLowerCase();
-    const isToken1WCAMP = tokenB.address.toLowerCase() === WCAMP_ADDRESS.toLowerCase();
+    const isToken0WCAMP = tokenA.address.toLowerCase() === contracts.WCAMP.toLowerCase();
+    const isToken1WCAMP = tokenB.address.toLowerCase() === contracts.WCAMP.toLowerCase();
     let value = 0n;
 
     if ((isToken0WCAMP || isToken1WCAMP) && !poolExists) {
@@ -672,7 +675,7 @@ async function main() {
 
     // Execute mint
     const txHash = await walletClient.writeContract({
-      address: NFT_POSITION_MANAGER as Address,
+      address: contracts.NFT_POSITION_MANAGER as Address,
       abi: NFT_POSITION_MANAGER_ABI,
       functionName: "mint",
       args: [mintParams],

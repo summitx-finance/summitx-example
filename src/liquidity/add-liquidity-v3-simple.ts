@@ -10,48 +10,51 @@ import {
   type Hex,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { basecampTestnet } from "../config/base-testnet";
+import { basecampTestnet, baseCampTestnetTokens } from "../config/base-testnet";
+import { getContractsForChain } from "../config/chains";
+import { ChainId } from "@summitx/chains";
 import { logger } from "../utils/logger";
 
 config();
 
-// Hardcoded token info to bypass the problematic contracts
+// Token configuration
+const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
 const TOKENS = [
   {
-    address: "0x1aE9c40eCd2DD6ad5858E5430A556d7aff28A44b",
-    symbol: "wCAMP",
-    decimals: 18,
-    name: "Wrapped CAMP"
+    address: baseCampTestnetTokens.wcamp.address,
+    symbol: baseCampTestnetTokens.wcamp.symbol || "wCAMP",
+    decimals: baseCampTestnetTokens.wcamp.decimals || 18,
+    name: baseCampTestnetTokens.wcamp.name || "Wrapped CAMP"
   },
   {
-    address: "0x71002dbf6cC7A885cE6563682932370c056aAca9",
-    symbol: "MUSDC",
-    decimals: 6,
-    name: "Mock USDC"
+    address: baseCampTestnetTokens.usdc.address,
+    symbol: baseCampTestnetTokens.usdc.symbol || "USDC",
+    decimals: baseCampTestnetTokens.usdc.decimals || 6,
+    name: baseCampTestnetTokens.usdc.name || "USD Coin"
   },
   {
-    address: "0xA745f7A59E70205e6040BdD3b33eD21DBD23FEB3",
-    symbol: "MUSDT",
-    decimals: 6,
-    name: "Mock USDT"
+    address: baseCampTestnetTokens.usdt.address,
+    symbol: baseCampTestnetTokens.usdt.symbol || "USDT",
+    decimals: baseCampTestnetTokens.usdt.decimals || 6,
+    name: baseCampTestnetTokens.usdt.name || "Tether USD"
   },
   {
-    address: "0x5d3011cCc6d3431D671c9e69EEddA9C5C654B97F",
-    symbol: "DAI",
-    decimals: 18,
-    name: "DAI Stablecoin"
+    address: baseCampTestnetTokens.dai.address,
+    symbol: baseCampTestnetTokens.dai.symbol || "DAI",
+    decimals: baseCampTestnetTokens.dai.decimals || 18,
+    name: baseCampTestnetTokens.dai.name || "DAI Stablecoin"
   },
   {
-    address: "0xC42BAA20e3a159cF7A8aDFA924648C2a2d59E062",
-    symbol: "WETH",
-    decimals: 18,
-    name: "Wrapped ETH"
+    address: baseCampTestnetTokens.weth.address,
+    symbol: baseCampTestnetTokens.weth.symbol || "WETH",
+    decimals: baseCampTestnetTokens.weth.decimals || 18,
+    name: baseCampTestnetTokens.weth.name || "Wrapped ETH"
   },
   {
-    address: "0x587aF234D373C752a6F6E9eD6c4Ce871e7528BCF",
-    symbol: "WBTC",
-    decimals: 8,
-    name: "Wrapped BTC"
+    address: baseCampTestnetTokens.wbtc.address,
+    symbol: baseCampTestnetTokens.wbtc.symbol || "WBTC",
+    decimals: baseCampTestnetTokens.wbtc.decimals || 8,
+    name: baseCampTestnetTokens.wbtc.name || "Wrapped BTC"
   }
 ];
 
