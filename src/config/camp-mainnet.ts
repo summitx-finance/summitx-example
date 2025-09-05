@@ -1,6 +1,17 @@
 import { ChainId } from "@summitx/chains";
+import {
+  FACTORY_ADDRESS_MAP as FACTORY_ADDRESS_MAP_SDK,
+  WNATIVE,
+} from "@summitx/sdk";
+import {
+  MIXED_ROUTE_QUOTER_ADDRESSES as MIXED_ROUTE_QUOTER_ADDRESSES_SDK,
+  SMART_ROUTER_ADDRESSES as SMART_ROUTER_ADDRESSES_SDK,
+  V2_ROUTER_ADDRESS as V2_ROUTER_ADDRESS_SDK,
+  V3_QUOTER_ADDRESSES as V3_QUOTER_ADDRESSES_SDK,
+} from "@summitx/smart-router/evm";
 import { Token } from "@summitx/swap-sdk-core";
-import type { PublicClient } from "viem";
+import { USDC } from "@summitx/tokens";
+import type { Address, PublicClient } from "viem";
 import { createPublicClient, http } from "viem";
 
 // Camp mainnet configuration
@@ -46,16 +57,16 @@ export const RPC_ENDPOINTS = ["https://rpc.camp.raas.gelato.cloud"];
 
 // Smart router addresses - THESE NEED TO BE UPDATED WITH ACTUAL MAINNET ADDRESSES
 export const SMART_ROUTER_ADDRESS =
-  "0xA688154E04544A9bc8F10F7B6717bF67d2fFCe9A";
-export const V2_ROUTER_ADDRESS = "0x38F7EE129C72ca0192eB58222942A88B7B33CC3C";
-export const V2_FACTORY_ADDRESS = "0x726ca2CB6bbFd7E288626f71A64E55A12ADf7cc7";
-export const V3_QUOTER_ADDRESS = "0xb9c37ab1abAD8DdD0F880C8A014fF7e9Eb5C2B60";
+  SMART_ROUTER_ADDRESSES_SDK[ChainId.BASECAMP];
+export const V2_ROUTER_ADDRESS = V2_ROUTER_ADDRESS_SDK[ChainId.BASECAMP];
+export const V2_FACTORY_ADDRESS = FACTORY_ADDRESS_MAP_SDK[ChainId.BASECAMP];
+export const V3_QUOTER_ADDRESS = V3_QUOTER_ADDRESSES_SDK[ChainId.BASECAMP];
 export const MIXED_ROUTE_QUOTER_ADDRESS =
-  "0x465220a91ac19a7da174FFacA3178738034c2AB7";
+  MIXED_ROUTE_QUOTER_ADDRESSES_SDK[ChainId.BASECAMP];
 
 // Common tokens on Camp mainnet - THESE NEED TO BE UPDATED WITH ACTUAL MAINNET ADDRESSES
-export const WCAMP_ADDRESS = "0x3bd5C81a8Adf3355078Dc5F73c41d3194B316690";
-export const USDC_ADDRESS = "0x977fdEF62CE095Ae8750Fd3496730F24F60dea7a";
+export const WCAMP_ADDRESS = WNATIVE[ChainId.BASECAMP].address as Address;
+export const USDC_ADDRESS = USDC[ChainId.BASECAMP].address as Address;
 
 // Token instances
 export const campMainnetTokens = {

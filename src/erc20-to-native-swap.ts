@@ -1,3 +1,4 @@
+import { ChainId } from "@summitx/chains";
 import { SwapRouter } from "@summitx/smart-router/evm";
 import { Percent, TradeType } from "@summitx/swap-sdk-core";
 import { config } from "dotenv";
@@ -11,12 +12,8 @@ import {
   type Hex,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import {
-  basecampTestnet,
-  baseCampTestnetTokens,
-} from "./config/base-testnet";
+import { basecampTestnet, baseCampTestnetTokens } from "./config/base-testnet";
 import { getContractsForChain } from "./config/chains";
-import { ChainId } from "@summitx/chains";
 import { TokenQuoter } from "./quoter/token-quoter";
 import { logger } from "./utils/logger";
 import {
@@ -84,7 +81,9 @@ async function main() {
   );
 
   if (inputBalance < parseUnits("0.5", INPUT_TOKEN.decimals)) {
-    logger.error(`Insufficient ${INPUT_TOKEN.symbol} balance. Need at least 0.5 ${INPUT_TOKEN.symbol}`);
+    logger.error(
+      `Insufficient ${INPUT_TOKEN.symbol} balance. Need at least 0.5 ${INPUT_TOKEN.symbol}`
+    );
     process.exit(1);
   }
 
@@ -105,7 +104,9 @@ async function main() {
     // Define swap amount
     const swapAmount = "0.5"; // 0.5 of input token
 
-    logger.info(`Getting quote for ${swapAmount} ${INPUT_TOKEN.symbol} → CAMP...`);
+    logger.info(
+      `Getting quote for ${swapAmount} ${INPUT_TOKEN.symbol} → CAMP...`
+    );
 
     // Get quote - first get to WCAMP, then we'll unwrap
     const quote = await quoter.getQuote(
@@ -254,19 +255,12 @@ async function main() {
     const finalNativeBalance = await publicClient.getBalance({
       address: account.address,
     });
-    const nativeReceived =
-      finalNativeBalance -
-      initialNativeBalance +
-      receipt.gasUsed * receipt.effectiveGasPrice;
 
     logger.success("Balance changes:", {
       [INPUT_TOKEN.symbol]: `${formatUnits(
         inputBalance,
         INPUT_TOKEN.decimals
-      )} → ${formatUnits(
-        finalUsdcBalance,
-        INPUT_TOKEN.decimals
-      )}`,
+      )} → ${formatUnits(finalUsdcBalance, INPUT_TOKEN.decimals)}`,
       "Native CAMP": `${formatUnits(
         initialNativeBalance,
         basecampTestnet.nativeCurrency.decimals
@@ -274,10 +268,6 @@ async function main() {
         finalNativeBalance,
         basecampTestnet.nativeCurrency.decimals
       )}`,
-      "Approx CAMP received": formatUnits(
-        nativeReceived,
-        basecampTestnet.nativeCurrency.decimals
-      ),
     });
   } catch (error: any) {
     if (error?.message?.includes("429")) {

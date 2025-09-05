@@ -1,6 +1,17 @@
 import { ChainId } from "@summitx/chains";
+import {
+  FACTORY_ADDRESS_MAP as FACTORY_ADDRESS_MAP_SDK,
+  WNATIVE,
+} from "@summitx/sdk";
+import {
+  MIXED_ROUTE_QUOTER_ADDRESSES as MIXED_ROUTE_QUOTER_ADDRESSES_SDK,
+  SMART_ROUTER_ADDRESSES as SMART_ROUTER_ADDRESSES_SDK,
+  V2_ROUTER_ADDRESS as V2_ROUTER_ADDRESS_SDK,
+  V3_QUOTER_ADDRESSES as V3_QUOTER_ADDRESSES_SDK,
+} from "@summitx/smart-router/evm";
 import { Token } from "@summitx/swap-sdk-core";
-import type { PublicClient } from "viem";
+import { USDC } from "@summitx/tokens";
+import type { Address, PublicClient } from "viem";
 import { createPublicClient, http } from "viem";
 
 // Base testnet configuration
@@ -46,16 +57,20 @@ export const RPC_ENDPOINTS = ["https://rpc-campnetwork.xyz"];
 
 // Smart router addresses
 export const SMART_ROUTER_ADDRESS =
-  "0x197b7c9fC5c8AeA84Ab2909Bf94f24370539722D";
-export const V2_ROUTER_ADDRESS = "0x03B38A5C3cf55cB3B8D61Dc7eaB7BBC0ec276708";
-export const V2_FACTORY_ADDRESS = "0xeFf237Bb973cbe9D7811bfC005fb86911a881F76";
-export const V3_QUOTER_ADDRESS = "0x5EA31C4313553B46317A54Cb0a922F8E4DE9166D";
+  SMART_ROUTER_ADDRESSES_SDK[ChainId.BASECAMP_TESTNET];
+export const V2_ROUTER_ADDRESS =
+  V2_ROUTER_ADDRESS_SDK[ChainId.BASECAMP_TESTNET];
+export const V2_FACTORY_ADDRESS =
+  FACTORY_ADDRESS_MAP_SDK[ChainId.BASECAMP_TESTNET];
+export const V3_QUOTER_ADDRESS =
+  V3_QUOTER_ADDRESSES_SDK[ChainId.BASECAMP_TESTNET];
 export const MIXED_ROUTE_QUOTER_ADDRESS =
-  "0x5Fe5d9c8a98858694a314e96bfb8377Aa18826d1";
+  MIXED_ROUTE_QUOTER_ADDRESSES_SDK[ChainId.BASECAMP_TESTNET];
 
 // Common tokens on Base testnet
-export const WCAMP_ADDRESS = "0x1aE9c40eCd2DD6ad5858E5430A556d7aff28A44b";
-export const USDC_ADDRESS = "0x71002dbf6cC7A885cE6563682932370c056aAca9";
+export const WCAMP_ADDRESS = WNATIVE[ChainId.BASECAMP_TESTNET]
+  .address as Address;
+export const USDC_ADDRESS = USDC[ChainId.BASECAMP_TESTNET].address as Address;
 export const USDT_ADDRESS = "0xA745f7A59E70205e6040BdD3b33eD21DBD23FEB3";
 export const DAI_ADDRESS = "0x5d3011cCc6d3431D671c9e69EEddA9C5C654B97F";
 export const WBTC_ADDRESS = "0x587aF234D373C752a6F6E9eD6c4Ce871e7528BCF";
