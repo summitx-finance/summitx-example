@@ -53,6 +53,30 @@ export const V2_ROUTER_ADDRESSES: ChainMap<Address> = {
   [ChainId.BASECAMP]: MAINNET_V2_ROUTER as Address,
 };
 
+// Launchpad addresses
+// TODO: Update with actual Launchpad addresses
+export const LAUNCHPAD_ADDRESSES: ChainMap<Address> = {
+  [ChainId.BASECAMP_TESTNET]:
+    "0x8cF89848e90e4f8F0A958BC9fb2Adb12A2cdC00e" as Address, // Placeholder
+  [ChainId.BASECAMP]: "0xaf433dAB9E231b3c213a05209699ce0bD9Ff3e75" as Address, // Placeholder
+};
+
+// ReferralRouter addresses (Launchpad)
+// TODO: Update with actual ReferralRouter addresses
+export const REFERRAL_ROUTER_ADDRESSES: ChainMap<Address> = {
+  [ChainId.BASECAMP_TESTNET]:
+    "0x5FBFA3c89bB668F2F8a761Cb16088A696E56205f" as Address, // Placeholder
+  [ChainId.BASECAMP]: "0x4cf695b263b9b7D8695A761Ee9A666f7B37D3b28" as Address, // Placeholder
+};
+
+// AccessRegistry addresses (Launchpad Access Control)
+// TODO: Update with actual AccessRegistry addresses
+export const ACCESS_REGISTRY_ADDRESSES: ChainMap<Address> = {
+  [ChainId.BASECAMP_TESTNET]:
+    "0xD955DC13aE93656e494537d0caC191F4049Af363" as Address, // Placeholder
+  [ChainId.BASECAMP]: "0xCA487F7745149cf3bE0781F0E180c313B08123ea" as Address, // Placeholder
+};
+
 // Factory addresses
 export const V2_FACTORY_ADDRESSES: ChainMap<Address> = {
   [ChainId.BASECAMP_TESTNET]: TESTNET_V2_FACTORY as Address,
@@ -191,6 +215,11 @@ export function getContractsForChain(
     // Quoters
     QUOTER_V2: QUOTER_V2_ADDRESSES[chainId],
     MIXED_ROUTE_QUOTER: MIXED_ROUTE_QUOTER_ADDRESSES[chainId],
+
+    // Launchpad
+    LAUNCHPAD: LAUNCHPAD_ADDRESSES[chainId],
+    REFERRAL_ROUTER: REFERRAL_ROUTER_ADDRESSES[chainId],
+    ACCESS_REGISTRY: ACCESS_REGISTRY_ADDRESSES[chainId],
 
     // Utilities
     MULTICALL3: MULTICALL3_ADDRESSES[chainId],

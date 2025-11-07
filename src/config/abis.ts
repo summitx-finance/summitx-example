@@ -205,6 +205,25 @@ export const QUOTER_V2_ABI = parseAbi([
   "function quoteExactOutputSingle((address tokenIn, address tokenOut, uint256 amount, uint24 fee, uint160 sqrtPriceLimitX96)) returns (uint256 amountIn, uint160 sqrtPriceX96After, uint32 initializedTicksCrossed, uint256 gasEstimate)",
 ]);
 
+// Launchpad ABI
+export const LAUNCHPAD_ABI = parseAbi([
+  "function quote(address token, uint256 amount, uint8 quoteType) view returns (uint256 amountInEth, uint256 amountInToken, uint256 amountOutEth, uint256 amountOutToken)",
+]);
+
+// ReferralRouter ABI (Launchpad)
+export const REFERRAL_ROUTER_ABI = parseAbi([
+  "function buyExactEth(address tokenOut, uint256 amountOutMin, bytes32 referralCode) payable returns (uint256 amountOut)",
+  "function buyExactTokens(address tokenIn, uint256 amountOut, bytes32 referralCode) returns (uint256 amountOut)",
+  "function sellExactEth(address tokenOut, uint256 amountOutMin, uint256 maxInput, bytes32 referralCode) payable returns (uint256 amountOut)",
+  "function sellExactTokens(address tokenIn, uint256 amountIn, uint256 minAmountOut, bytes32 referralCode) returns (uint256 amountOut)",
+]);
+
+// AccessRegistry ABI (Launchpad Access Control)
+export const ACCESS_REGISTRY_ABI = parseAbi([
+  "function registerWithInviteCode(bytes32 leaf, bytes32[] proof) returns (bool)",
+  "function isAccessible(address account) view returns (bool)",
+]);
+
 // Export all ABIs as a single object for convenience
 export const ABIS = {
   ERC20: ERC20_ABI,
@@ -218,6 +237,9 @@ export const ABIS = {
   SMART_ROUTER: SMART_ROUTER_ABI,
   MULTICALL3: MULTICALL3_ABI,
   QUOTER_V2: QUOTER_V2_ABI,
+  LAUNCHPAD: LAUNCHPAD_ABI,
+  REFERRAL_ROUTER: REFERRAL_ROUTER_ABI,
+  ACCESS_REGISTRY: ACCESS_REGISTRY_ABI,
 } as const;
 
 export default ABIS;

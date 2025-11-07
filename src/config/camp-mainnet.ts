@@ -120,6 +120,17 @@ export const campMainnetTokens = {
   // ),
 };
 
+export const campMainnetLaunchpadToken = {
+  MIKO: new Token(
+    CAMP_MAINNET,
+    "0x1e713b273635414a6916cb61fff3e290a373d20f",
+    18,
+    "MIKO",
+    "MIMI AND NEKO",
+    ""
+  ),
+};
+
 // Base tokens for routing
 export const BASE_TOKENS = [
   campMainnetTokens.wcamp,

@@ -129,6 +129,21 @@ npm run wrap-unwrap            # Convert CAMP ↔ WCAMP
 | `npm run liquidity:native`    | Native CAMP V2 liquidity management     |
 | `npm run liquidity:native-v3` | Native CAMP V3 concentrated liquidity   |
 
+### Launchpad Commands
+
+| Command                                       | Description                                  |
+| --------------------------------------------- | -------------------------------------------- |
+| `npm run launchpad:register-access`           | Register with invite code (Testnet)          |
+| `npm run mainnet:launchpad:register-access`   | Register with invite code (Mainnet)          |
+| `npm run launchpad:buy-exact-eth`             | Buy tokens with exact native CAMP (Testnet)  |
+| `npm run launchpad:buy-exact-tokens`          | Buy tokens with exact ERC20 tokens (Testnet) |
+| `npm run launchpad:sell-exact-eth`            | Sell exact native CAMP for tokens (Testnet)  |
+| `npm run launchpad:sell-exact-tokens`         | Sell exact ERC20 tokens for tokens (Testnet) |
+| `npm run mainnet:launchpad:buy-exact-eth`     | Buy tokens with exact native CAMP (Mainnet)  |
+| `npm run mainnet:launchpad:buy-exact-tokens`  | Buy tokens with exact ERC20 tokens (Mainnet) |
+| `npm run mainnet:launchpad:sell-exact-eth`    | Sell exact native CAMP for tokens (Mainnet)  |
+| `npm run mainnet:launchpad:sell-exact-tokens` | Sell exact ERC20 tokens for tokens (Mainnet) |
+
 ### Debug Commands
 
 | Command                | Description                     |
@@ -375,10 +390,10 @@ await walletClient.writeContract({
   abi: V2_ROUTER_ABI,
   functionName: "addLiquidityETH",
   args: [
-    tokenAddress,     // ERC20 token to pair with
-    tokenAmount,      // Amount of token
-    tokenAmountMin,   // Min token (slippage)
-    nativeAmountMin,  // Min CAMP (slippage)
+    tokenAddress, // ERC20 token to pair with
+    tokenAmount, // Amount of token
+    tokenAmountMin, // Min token (slippage)
+    nativeAmountMin, // Min CAMP (slippage)
     recipient,
     deadline,
   ],
@@ -402,6 +417,7 @@ await walletClient.writeContract({
 ```
 
 Features:
+
 - **Interactive CLI**: Choose between add, remove, or view positions
 - **Auto-detection**: Finds all native CAMP positions
 - **Optimal Ratios**: Calculates optimal amounts for existing pools
@@ -415,12 +431,44 @@ Features:
 Create a `.env` file with:
 
 ```env
-# Required
+# ============================================
+# Required Variables
+# ============================================
+
+# Private key for wallet operations (without 0x prefix)
+# WARNING: Never commit your private key to version control!
 PRIVATE_KEY=your_private_key_here
 
-# Optional (defaults provided)
+# ============================================
+# Launchpad Access Registration
+# ============================================
+
+# Access code (invite code) for launchpad registration
+# Required for: launchpad:register-access, mainnet:launchpad:register-access
+ACCESS_CODE=your_invite_code_here
+
+# API endpoint URL for generating merkle proof
+# Required for: launchpad:register-access, mainnet:launchpad:register-access
+# Example: https://api.example.com/proof
+PROOF_API_URL=https://your-proof-api-endpoint.com/proof
+
+# ============================================
+# Optional Network Configuration
+# ============================================
+
+# Base Camp Testnet RPC URL (optional, defaults provided)
 BASE_TESTNET_RPC_URL=https://rpc-campnetwork.xyz
+
+# Camp Mainnet RPC URL (optional, defaults provided)
+CAMP_MAINNET_RPC_URL=https://rpc.camp.raas.gelato.cloud
 ```
+
+**Notes:**
+
+- `PRIVATE_KEY`: Required for all transaction examples
+- `ACCESS_CODE`: Required only for launchpad access registration examples
+- `PROOF_API_URL`: Required only for launchpad access registration examples
+- RPC URLs: Optional, will use defaults if not provided
 
 ### Quoter Options
 

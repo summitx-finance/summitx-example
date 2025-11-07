@@ -128,6 +128,16 @@ export const baseCampTestnetTokens = {
   ),
 };
 
+export const basecampTestnetLaunchpadToken = {
+  DERP: new Token(
+    BASECAMP_TESTNET,
+    "0x7e8031395bf35cf2cb8bb8c02a5f73165544df58",
+    18,
+    "DERP",
+    "DERP"
+  ),
+};
+
 // Export alias for backward compatibility
 export const baseTestnetTokens = baseCampTestnetTokens;
 
