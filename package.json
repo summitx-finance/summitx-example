@@ -58,7 +58,15 @@
     "mainnet:launchpad:sell-exact-eth": "tsx src/launchpad/sell-exact-eth-mainnet.ts",
     "mainnet:launchpad:sell-exact-tokens": "tsx src/launchpad/sell-exact-tokens-mainnet.ts",
     "launchpad:register-access": "tsx src/launchpad/register-access.ts",
-    "mainnet:launchpad:register-access": "tsx src/launchpad/register-access-mainnet.ts"
+    "mainnet:launchpad:register-access": "tsx src/launchpad/register-access-mainnet.ts",
+    "referral:get": "tsx src/referral/referral-system-testnet.ts get",
+    "referral:register": "tsx src/referral/referral-system-testnet.ts register",
+    "referral:apply": "tsx src/referral/referral-system-testnet.ts apply",
+    "referral:check": "tsx src/referral/referral-system-testnet.ts check",
+    "mainnet:referral:get": "tsx src/referral/referral-system-mainnet.ts get",
+    "mainnet:referral:register": "tsx src/referral/referral-system-mainnet.ts register",
+    "mainnet:referral:apply": "tsx src/referral/referral-system-mainnet.ts apply",
+    "mainnet:referral:check": "tsx src/referral/referral-system-mainnet.ts check"
   },
   "dependencies": {
     "@summitx/chains": "0.1.1",

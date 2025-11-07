@@ -77,6 +77,14 @@ export const ACCESS_REGISTRY_ADDRESSES: ChainMap<Address> = {
   [ChainId.BASECAMP]: "0xCA487F7745149cf3bE0781F0E180c313B08123ea" as Address, // Placeholder
 };
 
+// ReferralHandlerV2 addresses (Referral System)
+// TODO: Update with actual ReferralHandlerV2 addresses
+export const REFERRAL_HANDLER_V2_ADDRESSES: ChainMap<Address> = {
+  [ChainId.BASECAMP_TESTNET]:
+    "0x66d06304b79612864ABF9AB66BEF5d1617305a7A" as Address, // TODO: Add actual address
+  [ChainId.BASECAMP]: "0x5EdF801128cf1F3091576E907E3ca6052b6D0677" as Address, // TODO: Add actual address
+};
+
 // Factory addresses
 export const V2_FACTORY_ADDRESSES: ChainMap<Address> = {
   [ChainId.BASECAMP_TESTNET]: TESTNET_V2_FACTORY as Address,
@@ -220,6 +228,7 @@ export function getContractsForChain(
     LAUNCHPAD: LAUNCHPAD_ADDRESSES[chainId],
     REFERRAL_ROUTER: REFERRAL_ROUTER_ADDRESSES[chainId],
     ACCESS_REGISTRY: ACCESS_REGISTRY_ADDRESSES[chainId],
+    REFERRAL_HANDLER_V2: REFERRAL_HANDLER_V2_ADDRESSES[chainId],
 
     // Utilities
     MULTICALL3: MULTICALL3_ADDRESSES[chainId],
