@@ -205,6 +205,72 @@ export const QUOTER_V2_ABI = parseAbi([
   "function quoteExactOutputSingle((address tokenIn, address tokenOut, uint256 amount, uint24 fee, uint160 sqrtPriceLimitX96)) returns (uint256 amountIn, uint160 sqrtPriceX96After, uint32 initializedTicksCrossed, uint256 gasEstimate)",
 ]);
 
+// Launchpad ABI
+export const LAUNCHPAD_ABI = parseAbi([
+  "function quote(address token, uint256 amount, uint8 quoteType) view returns (uint256 amountInEth, uint256 amountInToken, uint256 amountOutEth, uint256 amountOutToken)",
+]);
+
+// ReferralRouter ABI (Launchpad)
+export const REFERRAL_ROUTER_ABI = parseAbi([
+  "function buyExactEth(address tokenOut, uint256 amountOutMin, bytes32 referralCode) payable returns (uint256 amountOut)",
+  "function buyExactTokens(address tokenIn, uint256 amountOut, bytes32 referralCode) returns (uint256 amountOut)",
+  "function sellExactEth(address tokenOut, uint256 amountOutMin, uint256 maxInput, bytes32 referralCode) payable returns (uint256 amountOut)",
+  "function sellExactTokens(address tokenIn, uint256 amountIn, uint256 minAmountOut, bytes32 referralCode) returns (uint256 amountOut)",
+]);
+
+// AccessRegistry ABI (Launchpad Access Control)
+export const ACCESS_REGISTRY_ABI = parseAbi([
+  "function registerWithInviteCode(bytes32 leaf, bytes32[] proof) returns (bool)",
+  "function isAccessible(address account) view returns (bool)",
+]);
+
+// ReferralHandlerV2 ABI (Referral System)
+export const REFERRAL_HANDLER_V2_ABI = parseAbi([
+  // Core referral functions
+  "function referrerToCode(address referrer) view returns (bytes32)",
+  "function getReferralCode(address user) view returns (bytes32)",
+  "function getReferralInfo(address user) view returns ((bytes32 code, uint256 expiry))",
+  "function setReferral(address user, bytes32 code) returns (uint256)",
+  "function registerReferralCode(bytes32 code)",
+  "function codes(bytes32 code) view returns (uint256 volume, uint256 customDuration, uint256 accumulatedFees, address payoutAddress)",
+  // Code information
+  "function payoutAddress(bytes32 code) view returns (address)",
+  "function referredVolume(bytes32 code) view returns (uint256)",
+  "function accumulatedFees(bytes32 code) view returns (uint256)",
+  "function customDuration(bytes32 code) view returns (uint256)",
+  // Escrow functions
+  "function escrowedCodes(bytes32 code) view returns (address escrowedFor, uint256 escrowDeadline)",
+  "function escrowCode(bytes32 code, address escrowFor)",
+  "function claimFromEscrow(bytes32 code) payable",
+  "function transferEscrowedCode(bytes32 code, address recipient)",
+  "function withdrawEscrowedFees(bytes32[] codes) returns (uint256)",
+  // Fee withdrawal
+  "function withdrawFees(bytes32 code) returns (uint256)",
+  "function withdrawProtocolFees() returns (uint256)",
+  // Configuration (view)
+  "function defaultDuration() view returns (uint256)",
+  "function escrowDuration() view returns (uint256)",
+  "function escrowFee() view returns (uint256)",
+  "function tier1ReferralFraction() view returns (uint256)",
+  "function tier2ReferralFraction() view returns (uint256)",
+  "function tier2Volume() view returns (uint256)",
+  "function cutoffVolume() view returns (uint256)",
+  "function treasury() view returns (address)",
+  "function operator() view returns (address)",
+  // Configuration (write - admin only)
+  "function setPayoutAddress(bytes32 code, address payout)",
+  "function setCustomDurations((bytes32 code, uint256 duration)[] inputs)",
+  "function setDefaultDuration(uint256 _defaultDuration)",
+  "function setEscrowDuration(uint256 _escrowDuration)",
+  "function setEscrowFee(uint256 _escrowFee)",
+  "function setTierReferralFraction(uint256 _tier1ReferralFraction, uint256 _tier2ReferralFraction)",
+  "function setTierVolume(uint256 _tier2Volume, uint256 _cutoffVolume)",
+  "function setTreasury(address _treasury)",
+  "function setOperator(address _operator)",
+  "function overrideExpiries((address user, uint256 expiry)[] inputs)",
+  "function sync(bytes32[] codes, address[] users)",
+]);
+
 // Export all ABIs as a single object for convenience
 export const ABIS = {
   ERC20: ERC20_ABI,
@@ -218,6 +284,10 @@ export const ABIS = {
   SMART_ROUTER: SMART_ROUTER_ABI,
   MULTICALL3: MULTICALL3_ABI,
   QUOTER_V2: QUOTER_V2_ABI,
+  LAUNCHPAD: LAUNCHPAD_ABI,
+  REFERRAL_ROUTER: REFERRAL_ROUTER_ABI,
+  ACCESS_REGISTRY: ACCESS_REGISTRY_ABI,
+  REFERRAL_HANDLER_V2: REFERRAL_HANDLER_V2_ABI,
 } as const;
 
 export default ABIS;

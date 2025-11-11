@@ -14,8 +14,9 @@ import { privateKeyToAccount } from "viem/accounts";
 import {
   campMainnet,
   campMainnetTokens,
-  SMART_ROUTER_ADDRESS,
 } from "./config/camp-mainnet";
+import { getContractsForChain } from "./config/chains";
+import { ChainId } from "@summitx/chains";
 import { TokenQuoter } from "./quoter/token-quoter-mainnet";
 import { logger } from "./utils/logger";
 import {
@@ -45,6 +46,7 @@ async function executeSwap(
   account: any,
   quoter: TokenQuoter
 ) {
+  const contracts = getContractsForChain(ChainId.BASECAMP);
   logger.divider();
   logger.info(
     `Swapping ${amount} ${inputToken.symbol} → ${outputToken.symbol}`
@@ -100,7 +102,7 @@ async function executeSwap(
     walletClient,
     publicClient,
     inputToken.address as Address,
-    SMART_ROUTER_ADDRESS as Address,
+    contracts.SMART_ROUTER as Address,
     requiredAmount,
     inputToken.symbol,
     3000 // 3 second wait after approval
@@ -118,7 +120,7 @@ async function executeSwap(
   logger.info("Executing swap...");
 
   const swapHash = await walletClient.sendTransaction({
-    to: SMART_ROUTER_ADDRESS as Address,
+    to: contracts.SMART_ROUTER as Address,
     data: methodParameters.calldata,
     value: 0n, // No native value for ERC20 to ERC20 swaps
   });
@@ -152,6 +154,8 @@ async function main() {
   logger.info("Multiple token pair swaps");
   logger.divider();
 
+  const contracts = getContractsForChain(ChainId.BASECAMP);
+
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");
     process.exit(1);
@@ -182,13 +186,17 @@ async function main() {
     enableV3: true,
   });
 
+  // Define tokens to use throughout the file
+  const INPUT_TOKEN = campMainnetTokens.usdc;
+  const OUTPUT_TOKEN = campMainnetTokens.wcamp;
+
   try {
     // Add initial delay
     await delay(2000);
 
     // Display all token balances
     logger.info("Checking token balances...");
-    const tokens = [campMainnetTokens.usdc, campMainnetTokens.wcamp];
+    const tokens = [INPUT_TOKEN, OUTPUT_TOKEN];
 
     for (const token of tokens) {
       const balance = await publicClient.readContract({
@@ -203,16 +211,16 @@ async function main() {
     // Example swaps
     const swaps = [
       {
-        input: campMainnetTokens.usdc,
-        output: campMainnetTokens.wcamp,
+        input: INPUT_TOKEN,
+        output: OUTPUT_TOKEN,
         amount: "0.001",
-        description: "USDC → WCAMP",
+        description: `${INPUT_TOKEN.symbol} → ${OUTPUT_TOKEN.symbol}`,
       },
       {
-        input: campMainnetTokens.wcamp,
-        output: campMainnetTokens.usdc,
+        input: OUTPUT_TOKEN,
+        output: INPUT_TOKEN,
         amount: "0.001",
-        description: "WCAMP → USDC",
+        description: `${OUTPUT_TOKEN.symbol} → ${INPUT_TOKEN.symbol}`,
       },
     ];
 

@@ -48,7 +48,7 @@ export interface QuoteResult {
 
 // V3 and V2 subgraph URLs for Base Camp testnet
 const V3_SUBGRAPH_URL =
-  "https://api.goldsky.com/api/public/project_cllrma24857iy38x0a3oq836e/subgraphs/summitx-exchange-v3-users/1.0.1/gn";
+  "https://api.goldsky.com/api/public/project_cllrma24857iy38x0a3oq836e/subgraphs/summitx-exchange-v3-users/1.0.0/gn";
 const V2_SUBGRAPH_URL =
   "https://api.goldsky.com/api/public/project_cllrma24857iy38x0a3oq836e/subgraphs/summitx-exchange-v2/1.0.0/gn";
 

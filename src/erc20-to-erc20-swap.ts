@@ -14,8 +14,9 @@ import { privateKeyToAccount } from "viem/accounts";
 import {
   basecampTestnet,
   baseCampTestnetTokens,
-  SMART_ROUTER_ADDRESS,
 } from "./config/base-testnet";
+import { getContractsForChain } from "./config/chains";
+import { ChainId } from "@summitx/chains";
 import { TokenQuoter } from "./quoter/token-quoter";
 import { logger } from "./utils/logger";
 import {
@@ -45,6 +46,7 @@ async function executeSwap(
   account: any,
   quoter: TokenQuoter
 ) {
+  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
   logger.divider();
   logger.info(
     `Swapping ${amount} ${inputToken.symbol} → ${outputToken.symbol}`
@@ -100,7 +102,7 @@ async function executeSwap(
     walletClient,
     publicClient,
     inputToken.address as Address,
-    SMART_ROUTER_ADDRESS as Address,
+    contracts.SMART_ROUTER as Address,
     requiredAmount,
     inputToken.symbol,
     3000 // 3 second wait after approval
@@ -118,7 +120,7 @@ async function executeSwap(
   logger.info("Executing swap...");
 
   const swapHash = await walletClient.sendTransaction({
-    to: SMART_ROUTER_ADDRESS as Address,
+    to: contracts.SMART_ROUTER as Address,
     data: methodParameters.calldata,
     value: 0n, // No native value for ERC20 to ERC20 swaps
   });
@@ -152,6 +154,8 @@ async function main() {
   logger.info("Multiple token pair swaps");
   logger.divider();
 
+  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
+
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");
     process.exit(1);
@@ -182,6 +186,10 @@ async function main() {
     enableV3: true,
   });
 
+  // Define primary tokens to use throughout the file
+  const PRIMARY_INPUT_TOKEN = baseCampTestnetTokens.usdc;
+  const PRIMARY_OUTPUT_TOKEN = baseCampTestnetTokens.usdt;
+
   try {
     // Add initial delay
     await delay(2000);
@@ -189,8 +197,8 @@ async function main() {
     // Display all token balances
     logger.info("Checking token balances...");
     const tokens = [
-      baseCampTestnetTokens.usdc,
-      baseCampTestnetTokens.usdt,
+      PRIMARY_INPUT_TOKEN,
+      PRIMARY_OUTPUT_TOKEN,
       baseCampTestnetTokens.dai,
       baseCampTestnetTokens.weth,
       baseCampTestnetTokens.wbtc,
@@ -209,10 +217,10 @@ async function main() {
     // Example swaps
     const swaps = [
       {
-        input: baseCampTestnetTokens.usdc,
-        output: baseCampTestnetTokens.usdt,
+        input: PRIMARY_INPUT_TOKEN,
+        output: PRIMARY_OUTPUT_TOKEN,
         amount: "1",
-        description: "USDC → USDT (Stablecoin swap)",
+        description: `${PRIMARY_INPUT_TOKEN.symbol} → ${PRIMARY_OUTPUT_TOKEN.symbol} (Stablecoin swap)`,
       },
       // {
       //   input: baseCampTestnetTokens.usdt,

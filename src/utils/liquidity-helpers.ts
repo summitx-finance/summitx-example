@@ -3,6 +3,7 @@
  * Standard utilities for liquidity management across V2 and V3
  */
 
+import { ChainId } from "@summitx/chains";
 import {
   type Address,
   type PublicClient,
@@ -10,10 +11,16 @@ import {
   formatUnits,
   parseUnits,
 } from "viem";
-import { CONTRACTS, TX_DEFAULTS, getDeadline, applySlippage } from "../config/contracts";
 import { ABIS } from "../config/abis";
+import { baseCampTestnetTokens } from "../config/base-testnet";
+import {
+  TX_DEFAULTS,
+  applySlippage,
+  getContractsForChain,
+  getDeadline,
+} from "../config/chains";
 import { logger } from "./logger";
-import { waitForTransaction, delay } from "./transaction-helpers";
+import { delay, waitForTransaction } from "./transaction-helpers";
 
 // Types
 export interface TokenInfo {
@@ -68,29 +75,56 @@ export async function getTokenInfo(
       symbol: "UNKNOWN",
       decimals: 18,
       balance: 0n,
-      name: "Unknown Token"
+      name: "Unknown Token",
     };
   }
-  
+
   // Known token mappings for Base Camp testnet (fallback for buggy contracts)
-  const knownTokens: Record<string, { symbol: string, decimals: number, name: string }> = {
-    "0x1ae9c40ecd2dd6ad5858e5430a556d7aff28a44b": { symbol: "wCAMP", decimals: 18, name: "Wrapped CAMP" },
-    "0x71002dbf6cc7a885ce6563682932370c056aaca9": { symbol: "MUSDC", decimals: 6, name: "Mock USDC" },
-    "0xa745f7a59e70205e6040bdd3b33ed21dbd23feb3": { symbol: "MUSDT", decimals: 6, name: "Mock USDT" },
-    "0x5d3011ccc6d3431d671c9e69eedda9c5c654b97f": { symbol: "DAI", decimals: 18, name: "DAI Stablecoin" },
-    "0xc42baa20e3a159cf7a8adfa924648c2a2d59e062": { symbol: "WETH", decimals: 18, name: "Wrapped ETH" },
-    "0x587af234d373c752a6f6e9ed6c4ce871e7528bcf": { symbol: "WBTC", decimals: 8, name: "Wrapped BTC" }
+  const knownTokens: Record<
+    string,
+    { symbol: string; decimals: number; name: string }
+  > = {
+    [baseCampTestnetTokens.wcamp.address.toLowerCase()]: {
+      symbol: baseCampTestnetTokens.wcamp.symbol || "wCAMP",
+      decimals: baseCampTestnetTokens.wcamp.decimals || 18,
+      name: baseCampTestnetTokens.wcamp.name || "Wrapped CAMP",
+    },
+    [baseCampTestnetTokens.usdc.address.toLowerCase()]: {
+      symbol: baseCampTestnetTokens.usdc.symbol || "USDC",
+      decimals: baseCampTestnetTokens.usdc.decimals || 6,
+      name: baseCampTestnetTokens.usdc.name || "USD Coin",
+    },
+    [baseCampTestnetTokens.usdt.address.toLowerCase()]: {
+      symbol: baseCampTestnetTokens.usdt.symbol || "USDT",
+      decimals: baseCampTestnetTokens.usdt.decimals || 6,
+      name: baseCampTestnetTokens.usdt.name || "Tether USD",
+    },
+    [baseCampTestnetTokens.dai.address.toLowerCase()]: {
+      symbol: baseCampTestnetTokens.dai.symbol || "DAI",
+      decimals: baseCampTestnetTokens.dai.decimals || 18,
+      name: baseCampTestnetTokens.dai.name || "DAI Stablecoin",
+    },
+    [baseCampTestnetTokens.weth.address.toLowerCase()]: {
+      symbol: baseCampTestnetTokens.weth.symbol || "WETH",
+      decimals: baseCampTestnetTokens.weth.decimals || 18,
+      name: baseCampTestnetTokens.weth.name || "Wrapped ETH",
+    },
+    [baseCampTestnetTokens.wbtc.address.toLowerCase()]: {
+      symbol: baseCampTestnetTokens.wbtc.symbol || "WBTC",
+      decimals: baseCampTestnetTokens.wbtc.decimals || 8,
+      name: baseCampTestnetTokens.wbtc.name || "Wrapped BTC",
+    },
   };
-  
+
   const addressLower = tokenAddress?.toLowerCase() || "";
   const fallback = knownTokens[addressLower];
-  
+
   // Try to get actual values, but use fallbacks if contracts are buggy
   let symbol = fallback?.symbol || "UNKNOWN";
   let decimals = fallback?.decimals || 18;
   let balance = 0n;
   let name = fallback?.name;
-  
+
   try {
     // Try to get balance (usually works even when symbol/decimals fail)
     balance = await publicClient.readContract({
@@ -102,7 +136,7 @@ export async function getTokenInfo(
   } catch (e) {
     console.warn(`Failed to get balance for ${tokenAddress}`);
   }
-  
+
   // Only try symbol/decimals if we don't have fallback or if explicitly needed
   if (!fallback) {
     try {
@@ -112,12 +146,14 @@ export async function getTokenInfo(
         functionName: "symbol",
       });
     } catch (e: any) {
-      if (e.message?.includes('StackOverflow')) {
-        console.warn(`Token ${tokenAddress} has StackOverflow bug in symbol(), using fallback`);
+      if (e.message?.includes("StackOverflow")) {
+        console.warn(
+          `Token ${tokenAddress} has StackOverflow bug in symbol(), using fallback`
+        );
       }
       symbol = `TOKEN_${tokenAddress.slice(0, 6)}`;
     }
-    
+
     try {
       decimals = await publicClient.readContract({
         address: tokenAddress,
@@ -128,7 +164,7 @@ export async function getTokenInfo(
       console.warn(`Failed to get decimals for ${tokenAddress}, using 18`);
       decimals = 18;
     }
-    
+
     try {
       name = await publicClient.readContract({
         address: tokenAddress,
@@ -162,19 +198,31 @@ export async function checkAndApproveToken(
   });
 
   if (allowance < amount) {
-    logger.info(`📝 Approving ${tokenSymbol || tokenAddress} for ${formatUnits(amount, 18)}...`);
-    
+    logger.info(
+      `📝 Approving ${tokenSymbol || tokenAddress} for ${formatUnits(
+        amount,
+        18
+      )}...`
+    );
+
     const hash = await walletClient.writeContract({
       address: tokenAddress,
       abi: ABIS.ERC20,
       functionName: "approve",
       args: [spender, amount],
     });
-    
-    await waitForTransaction(publicClient, hash, `${tokenSymbol || "token"} approval`);
-    
+
+    await waitForTransaction(
+      publicClient,
+      hash,
+      `${tokenSymbol || "token"} approval`
+    );
+
     // Add a delay after approval to ensure the transaction is fully processed
-    await delay(3000, "⏳ Waiting 3 seconds after approval before proceeding...");
+    await delay(
+      3000,
+      "⏳ Waiting 3 seconds after approval before proceeding..."
+    );
   } else {
     logger.info(`✅ ${tokenSymbol || "Token"} already approved`);
   }
@@ -184,10 +232,11 @@ export async function checkAndApproveToken(
 export async function getV2PairInfo(
   publicClient: PublicClient,
   tokenA: Address,
-  tokenB: Address
+  tokenB: Address,
+  chainId: ChainId
 ): Promise<V2PairInfo | null> {
   const pairAddress = await publicClient.readContract({
-    address: CONTRACTS.V2_FACTORY,
+    address: getContractsForChain(chainId).V2_FACTORY,
     abi: ABIS.V2_FACTORY,
     functionName: "getPair",
     args: [tokenA, tokenB],
@@ -222,8 +271,8 @@ export async function getV2PairInfo(
 
   // Order reserves based on input token order
   const isOrderCorrect = token0.toLowerCase() === tokenA.toLowerCase();
-  const [reserve0, reserve1] = isOrderCorrect 
-    ? [reserves[0], reserves[1]] 
+  const [reserve0, reserve1] = isOrderCorrect
+    ? [reserves[0], reserves[1]]
     : [reserves[1], reserves[0]];
 
   return {
@@ -236,38 +285,16 @@ export async function getV2PairInfo(
   };
 }
 
-export async function calculateV2OptimalAmounts(
-  publicClient: PublicClient,
-  tokenA: Address,
-  tokenB: Address,
-  amountA: bigint
-): Promise<{ amountB: bigint; isNewPair: boolean }> {
-  const pairInfo = await getV2PairInfo(publicClient, tokenA, tokenB);
-  
-  if (!pairInfo) {
-    return { amountB: 0n, isNewPair: true };
-  }
-
-  // Calculate optimal amount B based on current reserves
-  const amountB = await publicClient.readContract({
-    address: CONTRACTS.V2_ROUTER,
-    abi: ABIS.V2_ROUTER,
-    functionName: "quote",
-    args: [amountA, pairInfo.reserve0, pairInfo.reserve1],
-  });
-
-  return { amountB, isNewPair: false };
-}
-
 // V3 Liquidity helpers
 export async function getV3PoolInfo(
   publicClient: PublicClient,
   tokenA: Address,
   tokenB: Address,
-  fee: number
+  fee: number,
+  chainId: ChainId
 ): Promise<V3PoolInfo | null> {
   const poolAddress = await publicClient.readContract({
-    address: CONTRACTS.V3_FACTORY,
+    address: getContractsForChain(chainId).V3_FACTORY,
     abi: ABIS.V3_FACTORY,
     functionName: "getPool",
     args: [tokenA, tokenB, fee],
@@ -335,7 +362,10 @@ export function priceToTick(price: number): number {
   return Math.floor(Math.log(price) / Math.log(1.0001));
 }
 
-export function getNearestUsableTick(tick: number, tickSpacing: number): number {
+export function getNearestUsableTick(
+  tick: number,
+  tickSpacing: number
+): number {
   if (!isFinite(tick) || !tickSpacing) {
     throw new Error(`Invalid tick (${tick}) or tickSpacing (${tickSpacing})`);
   }
@@ -344,7 +374,9 @@ export function getNearestUsableTick(tick: number, tickSpacing: number): number 
 
 export function calculateV3PriceRange(tickLower: number, tickUpper: number) {
   if (!isFinite(tickLower) || !isFinite(tickUpper)) {
-    throw new Error(`Invalid tick range: tickLower=${tickLower}, tickUpper=${tickUpper}`);
+    throw new Error(
+      `Invalid tick range: tickLower=${tickLower}, tickUpper=${tickUpper}`
+    );
   }
   const priceLower = tickToPrice(tickLower);
   const priceUpper = tickToPrice(tickUpper);
@@ -363,8 +395,14 @@ export async function getNativeBalance(
   return publicClient.getBalance({ address });
 }
 
-export function isNativeToken(tokenAddress: Address): boolean {
-  return tokenAddress.toLowerCase() === CONTRACTS.WCAMP.toLowerCase();
+export function isNativeToken(
+  tokenAddress: Address,
+  chainId: ChainId
+): boolean {
+  return (
+    tokenAddress.toLowerCase() ===
+    getContractsForChain(chainId).WCAMP.toLowerCase()
+  );
 }
 
 export async function hasEnoughNativeForGas(
@@ -381,19 +419,20 @@ export async function hasEnoughNativeForGas(
 // Position helpers
 export async function getUserV2Positions(
   publicClient: PublicClient,
-  userAddress: Address
+  userAddress: Address,
+  chainId: ChainId
 ): Promise<any[]> {
   const positions = [];
-  
+
   const pairsLength = await publicClient.readContract({
-    address: CONTRACTS.V2_FACTORY,
+    address: getContractsForChain(chainId).V2_FACTORY,
     abi: ABIS.V2_FACTORY,
     functionName: "allPairsLength",
   });
 
   for (let i = 0n; i < pairsLength; i++) {
     const pairAddress = await publicClient.readContract({
-      address: CONTRACTS.V2_FACTORY,
+      address: getContractsForChain(chainId).V2_FACTORY,
       abi: ABIS.V2_FACTORY,
       functionName: "allPairs",
       args: [i],
@@ -454,13 +493,14 @@ export async function getUserV2Positions(
 
 export async function getUserV3Positions(
   publicClient: PublicClient,
-  userAddress: Address
+  userAddress: Address,
+  chainId: ChainId
 ): Promise<any[]> {
   const positions = [];
-  
+
   try {
     const balance = await publicClient.readContract({
-      address: CONTRACTS.NFT_POSITION_MANAGER,
+      address: getContractsForChain(chainId).NFT_POSITION_MANAGER,
       abi: ABIS.NFT_POSITION_MANAGER,
       functionName: "balanceOf",
       args: [userAddress],
@@ -468,14 +508,14 @@ export async function getUserV3Positions(
 
     for (let i = 0n; i < balance; i++) {
       const tokenId = await publicClient.readContract({
-        address: CONTRACTS.NFT_POSITION_MANAGER,
+        address: getContractsForChain(chainId).NFT_POSITION_MANAGER,
         abi: ABIS.NFT_POSITION_MANAGER,
         functionName: "tokenOfOwnerByIndex",
         args: [userAddress, i],
       });
 
       const position = await publicClient.readContract({
-        address: CONTRACTS.NFT_POSITION_MANAGER,
+        address: getContractsForChain(chainId).NFT_POSITION_MANAGER,
         abi: ABIS.NFT_POSITION_MANAGER,
         functionName: "positions",
         args: [tokenId],
@@ -484,7 +524,7 @@ export async function getUserV3Positions(
       // The positions function returns a tuple with these fields in order:
       // nonce, operator, token0, token1, fee, tickLower, tickUpper, liquidity,
       // feeGrowthInside0LastX128, feeGrowthInside1LastX128, tokensOwed0, tokensOwed1
-      
+
       let positionData;
       if (Array.isArray(position)) {
         // If it's an array, extract by index
@@ -503,7 +543,7 @@ export async function getUserV3Positions(
           tokensOwed0: position[10],
           tokensOwed1: position[11],
         };
-      } else if (position && typeof position === 'object') {
+      } else if (position && typeof position === "object") {
         // If it's an object, try to extract named properties
         positionData = {
           tokenId,
@@ -515,7 +555,7 @@ export async function getUserV3Positions(
           liquidity: position.liquidity || position[7],
           tokensOwed0: position.tokensOwed0 || position[10],
           tokensOwed1: position.tokensOwed1 || position[11],
-          ...position
+          ...position,
         };
       } else {
         // Fallback - skip this position
@@ -533,7 +573,11 @@ export async function getUserV3Positions(
 }
 
 // Transaction helpers
-export function formatTokenAmount(amount: bigint, decimals: number, symbol?: string): string {
+export function formatTokenAmount(
+  amount: bigint,
+  decimals: number,
+  symbol?: string
+): string {
   const formatted = formatUnits(amount, decimals);
   return symbol ? `${formatted} ${symbol}` : formatted;
 }
@@ -543,11 +587,17 @@ export function parseTokenAmount(amount: string, decimals: number): bigint {
 }
 
 // Slippage calculations
-export function calculateMinAmount(amount: bigint, slippageBps: bigint = TX_DEFAULTS.slippageTolerance): bigint {
+export function calculateMinAmount(
+  amount: bigint,
+  slippageBps: bigint = TX_DEFAULTS.slippageTolerance
+): bigint {
   return applySlippage(amount, slippageBps);
 }
 
-export function calculateMaxAmount(amount: bigint, slippageBps: bigint = TX_DEFAULTS.slippageTolerance): bigint {
+export function calculateMaxAmount(
+  amount: bigint,
+  slippageBps: bigint = TX_DEFAULTS.slippageTolerance
+): bigint {
   return (amount * (10000n + slippageBps)) / 10000n;
 }
 
@@ -556,12 +606,11 @@ export const LiquidityHelpers = {
   // Token
   getTokenInfo,
   checkAndApproveToken,
-  
+
   // V2
   getV2PairInfo,
-  calculateV2OptimalAmounts,
   getUserV2Positions,
-  
+
   // V3
   getV3PoolInfo,
   tickToPrice,
@@ -570,12 +619,12 @@ export const LiquidityHelpers = {
   calculateV3PriceRange,
   encodePriceSqrt,
   getUserV3Positions,
-  
+
   // Native
   getNativeBalance,
   isNativeToken,
   hasEnoughNativeForGas,
-  
+
   // Utils
   formatTokenAmount,
   parseTokenAmount,

@@ -1,14 +1,18 @@
 import { SwapRouter } from "@summitx/smart-router/evm";
 import { Percent, TradeType } from "@summitx/swap-sdk-core";
 import { config } from "dotenv";
-import { baseCampTestnetTokens, SMART_ROUTER_ADDRESS } from "./config/base-testnet";
-import { TokenQuoter } from "./quoter/token-quoter";
-import { logger } from "./utils/logger";
+import { baseCampTestnetTokens } from "../config/base-testnet";
+import { getContractsForChain } from "../config/chains";
+import { ChainId } from "@summitx/chains";
+import { TokenQuoter } from "../quoter/token-quoter";
+import { logger } from "../utils/logger";
 
 config();
 
 async function debugSwap() {
   logger.header("🔍 Debug Swap Parameters");
+
+  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
 
   const quoter = new TokenQuoter({
     rpcUrl: "https://rpc-campnetwork.xyz",
@@ -49,13 +53,13 @@ async function debugSwap() {
     calldata: methodParameters.calldata?.slice(0, 10), // First 10 chars (function selector)
   });
 
-  logger.info("Expected Router Address:", SMART_ROUTER_ADDRESS);
+  logger.info("Expected Router Address:", contracts.SMART_ROUTER);
   
   if (!methodParameters.to) {
     logger.error("❌ WARNING: 'to' address is not set in methodParameters!");
     logger.info("This will cause a contract creation instead of a swap!");
-  } else if (methodParameters.to !== SMART_ROUTER_ADDRESS) {
-    logger.error(`❌ WARNING: 'to' address (${methodParameters.to}) doesn't match router (${SMART_ROUTER_ADDRESS})!`);
+  } else if (methodParameters.to !== contracts.SMART_ROUTER) {
+    logger.error(`❌ WARNING: 'to' address (${methodParameters.to}) doesn't match router (${contracts.SMART_ROUTER})!`);
   } else {
     logger.success("✅ 'to' address correctly set to router");
   }

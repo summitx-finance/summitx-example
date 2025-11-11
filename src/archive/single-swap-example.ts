@@ -14,8 +14,9 @@ import { privateKeyToAccount } from "viem/accounts";
 import {
   basecampTestnet,
   baseCampTestnetTokens,
-  SMART_ROUTER_ADDRESS,
 } from "../config/base-testnet";
+import { getContractsForChain } from "../config/chains";
+import { ChainId } from "@summitx/chains";
 import { TokenQuoter } from "../quoter/token-quoter";
 import { logger } from "../utils/logger";
 
@@ -53,6 +54,8 @@ const ERC20_ABI = [
 
 async function main() {
   logger.header("🔄 Single Swap Example - Base Camp Testnet");
+
+  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
 
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");
@@ -137,7 +140,7 @@ async function main() {
       address: baseCampTestnetTokens.usdc.address as Address,
       abi: ERC20_ABI,
       functionName: "allowance",
-      args: [account.address, SMART_ROUTER_ADDRESS],
+      args: [account.address, contracts.SMART_ROUTER],
     });
 
     if (allowance < swapAmountBigInt) {
@@ -146,7 +149,7 @@ async function main() {
         address: baseCampTestnetTokens.usdc.address as Address,
         abi: ERC20_ABI,
         functionName: "approve",
-        args: [SMART_ROUTER_ADDRESS, swapAmountBigInt],
+        args: [contracts.SMART_ROUTER, swapAmountBigInt],
       });
 
       logger.info(`Approval transaction: ${approveHash}`);
@@ -170,16 +173,16 @@ async function main() {
 
     // Log the method parameters for debugging
     logger.info("Swap parameters:", {
-      to: SMART_ROUTER_ADDRESS,
+      to: contracts.SMART_ROUTER,
       functionSelector: methodParameters.calldata.slice(0, 10),
       value: methodParameters.value,
     });
 
     // Execute swap
-    logger.info(`Executing swap to router: ${SMART_ROUTER_ADDRESS}`);
+    logger.info(`Executing swap to router: ${contracts.SMART_ROUTER}`);
 
     const swapHash = await walletClient.sendTransaction({
-      to: SMART_ROUTER_ADDRESS as Address, // Use the router address directly
+      to: contracts.SMART_ROUTER as Address, // Use the router address directly
       data: methodParameters.calldata,
       value: methodParameters.value,
       gas: 500000n,

@@ -1,3 +1,4 @@
+import { ChainId } from "@summitx/chains";
 import { config } from "dotenv";
 import readlineSync from "readline-sync";
 import {
@@ -13,13 +14,20 @@ import {
 import { privateKeyToAccount } from "viem/accounts";
 import { NFT_POSITION_MANAGER_ABI } from "../config/abis";
 import { campMainnet, campMainnetTokens } from "../config/camp-mainnet";
-
+import {
+  applySlippage,
+  getContractsForChain,
+  getDeadline,
+  V3_FEE_TIERS,
+  V3_TICK_SPACINGS,
+} from "../config/chains";
 import { LiquidityHelpers, type TokenInfo } from "../utils/liquidity-helpers";
 import { logger } from "../utils/logger";
-import { V3_FEE_TIERS, V3_TICK_SPACINGS } from "../config/chains";
-import CONTRACTS from "../config/contracts";
 
 config();
+
+const chainId = ChainId.BASECAMP;
+const contracts = getContractsForChain(chainId);
 
 // Fee tier options for V3
 const FEE_TIER_OPTIONS = [
@@ -46,10 +54,8 @@ const FEE_TIER_OPTIONS = [
 ];
 
 async function main() {
-  logger.header("⚡ Native CAMP V3 Concentrated Liquidity - MAINNET");
-  logger.info(
-    "Manage concentrated liquidity positions with native CAMP on Camp Mainnet"
-  );
+  logger.header("⚡ Native CAMP V3 Concentrated Liquidity");
+  logger.info("Manage concentrated liquidity positions with native CAMP");
   logger.divider();
 
   if (!process.env.PRIVATE_KEY) {
@@ -61,23 +67,16 @@ async function main() {
 
   const publicClient = createPublicClient({
     chain: campMainnet,
-    transport: http(
-      process.env.VITE_CAMP_MAINNET_RPC_URL ||
-        "https://rpc.camp.raas.gelato.cloud"
-    ),
+    transport: http(campMainnet.rpcUrls.default.http[0]),
   });
 
   const walletClient = createWalletClient({
     account,
     chain: campMainnet,
-    transport: http(
-      process.env.VITE_CAMP_MAINNET_RPC_URL ||
-        "https://rpc.camp.raas.gelato.cloud"
-    ),
+    transport: http(campMainnet.rpcUrls.default.http[0]),
   });
 
   logger.info(`Wallet address: ${account.address}`);
-  logger.warn("⚠️ You are connected to Camp MAINNET (Chain ID: 484)");
 
   try {
     // Get native CAMP balance
@@ -145,8 +144,11 @@ async function addV3NativeLiquidity(
 ) {
   logger.header("\n💧 Add V3 Native CAMP Concentrated Liquidity");
 
-  // Get available tokens (excluding WCAMP since we're using native)
-  const tokens = [campMainnetTokens.usdc, campMainnetTokens.wcamp];
+  // Define native V3 liquidity token pairs (excluding WCAMP since we're using native)
+  const NATIVE_V3_PAIR_TOKENS = [campMainnetTokens.usdc];
+
+  // Get available tokens
+  const tokens = NATIVE_V3_PAIR_TOKENS;
 
   // Get token balances
   logger.info("\n📊 Available tokens to pair with native CAMP:");
@@ -180,13 +182,13 @@ async function addV3NativeLiquidity(
   let token0, token1;
   let isNativeToken0 = false;
 
-  if (CONTRACTS.WCAMP.toLowerCase() < selectedToken.address.toLowerCase()) {
-    token0 = CONTRACTS.WCAMP;
+  if (contracts.WCAMP.toLowerCase() < selectedToken.address.toLowerCase()) {
+    token0 = contracts.WCAMP;
     token1 = selectedToken.address;
     isNativeToken0 = true;
   } else {
     token0 = selectedToken.address;
-    token1 = CONTRACTS.WCAMP;
+    token1 = contracts.WCAMP;
     isNativeToken0 = false;
   }
 
@@ -215,7 +217,8 @@ async function addV3NativeLiquidity(
     publicClient,
     token0,
     token1,
-    selectedFeeTier.fee
+    selectedFeeTier.fee,
+    chainId
   );
 
   let currentTick = 0;
@@ -551,10 +554,9 @@ async function addV3NativeLiquidity(
     priceUpper < 0.0001 ? priceUpper.toExponential(2) : priceUpper.toFixed(4);
   logger.info(`  Price Range: ${priceRangeLower} - ${priceRangeUpper}`);
   logger.info(`  Slippage: 0.5%`);
-  logger.warn("  ⚠️ Network: Camp MAINNET");
 
   const confirm = readlineSync.keyInYNStrict(
-    "\nProceed with adding liquidity on MAINNET?"
+    "\nProceed with adding liquidity?"
   );
   if (!confirm) {
     logger.info("Cancelled");
@@ -568,7 +570,7 @@ async function addV3NativeLiquidity(
     publicClient,
     selectedToken.address,
     tokenAmount,
-    CONTRACTS.NFT_POSITION_MANAGER,
+    contracts.NFT_POSITION_MANAGER,
     selectedToken.symbol
   );
 
@@ -643,7 +645,7 @@ async function addV3NativeLiquidity(
   );
 
   const txHash = await walletClient.writeContract({
-    address: CONTRACTS.NFT_POSITION_MANAGER,
+    address: contracts.NFT_POSITION_MANAGER,
     abi: NFT_POSITION_MANAGER_ABI,
     functionName: "multicall",
     args: [multicallData],
@@ -659,9 +661,7 @@ async function addV3NativeLiquidity(
     logger.success("✅ V3 native liquidity added successfully!");
     logger.info(`Gas used: ${receipt.gasUsed}`);
     logger.success("\n🎉 Position created as NFT!");
-    logger.info(
-      "Use 'npm run liquidity:native-v3:mainnet' to manage your positions"
-    );
+    logger.info("Use 'npm run liquidity:native-v3' to manage your positions");
   } else {
     logger.error("❌ Transaction failed");
   }
@@ -677,7 +677,8 @@ async function removeV3NativeLiquidity(
   // Get user's V3 positions
   const positions = await LiquidityHelpers.getUserV3Positions(
     publicClient,
-    userAddress
+    userAddress,
+    chainId
   );
 
   if (positions.length === 0) {
@@ -687,7 +688,7 @@ async function removeV3NativeLiquidity(
 
   // Filter positions with WCAMP (native)
   const nativePositions = positions.filter(
-    (p) => p.token0 === CONTRACTS.WCAMP || p.token1 === CONTRACTS.WCAMP
+    (p) => p.token0 === contracts.WCAMP || p.token1 === contracts.WCAMP
   );
 
   if (nativePositions.length === 0) {
@@ -703,10 +704,10 @@ async function removeV3NativeLiquidity(
   for (let i = 0; i < nativePositions.length; i++) {
     const pos = nativePositions[i];
     const [token0Info, token1Info] = await Promise.all([
-      pos.token0 === CONTRACTS.WCAMP
+      pos.token0 === contracts.WCAMP
         ? { symbol: "CAMP", decimals: 18 }
         : LiquidityHelpers.getTokenInfo(publicClient, pos.token0, userAddress),
-      pos.token1 === CONTRACTS.WCAMP
+      pos.token1 === contracts.WCAMP
         ? { symbol: "CAMP", decimals: 18 }
         : LiquidityHelpers.getTokenInfo(publicClient, pos.token1, userAddress),
     ]);
@@ -777,13 +778,12 @@ async function removeV3NativeLiquidity(
   );
   logger.info(
     `  Will receive native CAMP + ${
-      selectedPosition.token0 === CONTRACTS.WCAMP ? "token" : "WCAMP"
+      selectedPosition.token0 === contracts.WCAMP ? "token" : "WCAMP"
     }`
   );
-  logger.warn("  ⚠️ Network: Camp MAINNET");
 
   const confirm = readlineSync.keyInYNStrict(
-    "\nProceed with removing liquidity on MAINNET?"
+    "\nProceed with removing liquidity?"
   );
   if (!confirm) {
     logger.info("Cancelled");
@@ -820,7 +820,7 @@ async function removeV3NativeLiquidity(
       args: [
         {
           tokenId: selectedPosition.tokenId,
-          recipient: CONTRACTS.NFT_POSITION_MANAGER, // Collect to position manager for unwrapping
+          recipient: contracts.NFT_POSITION_MANAGER, // Collect to position manager for unwrapping
           amount0Max: 2n ** 128n - 1n,
           amount1Max: 2n ** 128n - 1n,
         },
@@ -839,7 +839,7 @@ async function removeV3NativeLiquidity(
 
   // Sweep any remaining tokens
   const otherToken =
-    selectedPosition.token0 === CONTRACTS.WCAMP
+    selectedPosition.token0 === contracts.WCAMP
       ? selectedPosition.token1
       : selectedPosition.token0;
 
@@ -852,7 +852,7 @@ async function removeV3NativeLiquidity(
   );
 
   const txHash = await walletClient.writeContract({
-    address: CONTRACTS.NFT_POSITION_MANAGER,
+    address: contracts.NFT_POSITION_MANAGER,
     abi: NFT_POSITION_MANAGER_ABI,
     functionName: "multicall",
     args: [multicallData],
@@ -896,7 +896,8 @@ async function collectV3Fees(
   // Get user's V3 positions
   const positions = await LiquidityHelpers.getUserV3Positions(
     publicClient,
-    userAddress
+    userAddress,
+    chainId
   );
 
   if (positions.length === 0) {
@@ -922,10 +923,10 @@ async function collectV3Fees(
 
   for (const pos of positionsWithFees) {
     const [token0Info, token1Info] = await Promise.all([
-      pos.token0 === CONTRACTS.WCAMP
+      pos.token0 === contracts.WCAMP
         ? { symbol: "CAMP", decimals: 18 }
         : LiquidityHelpers.getTokenInfo(publicClient, pos.token0, userAddress),
-      pos.token1 === CONTRACTS.WCAMP
+      pos.token1 === contracts.WCAMP
         ? { symbol: "CAMP", decimals: 18 }
         : LiquidityHelpers.getTokenInfo(publicClient, pos.token1, userAddress),
     ]);
@@ -951,8 +952,7 @@ async function collectV3Fees(
     }
   }
 
-  logger.warn("\n⚠️ Network: Camp MAINNET");
-  const confirm = readlineSync.keyInYNStrict("\nCollect all fees on MAINNET?");
+  const confirm = readlineSync.keyInYNStrict("\nCollect all fees?");
   if (!confirm) {
     logger.info("Cancelled");
     return;
@@ -981,7 +981,7 @@ async function collectV3Fees(
   }
 
   const txHash = await walletClient.writeContract({
-    address: CONTRACTS.NFT_POSITION_MANAGER,
+    address: contracts.NFT_POSITION_MANAGER,
     abi: NFT_POSITION_MANAGER_ABI,
     functionName: "multicall",
     args: [multicallData],
@@ -1001,29 +1001,28 @@ async function collectV3Fees(
 }
 
 async function viewV3NativePositions(publicClient: any, userAddress: Address) {
-  logger.header("\n📊 V3 Native CAMP Positions - MAINNET");
+  logger.header("\n📊 V3 Native CAMP Positions");
 
   const positions = await LiquidityHelpers.getUserV3Positions(
     publicClient,
-    userAddress
+    userAddress,
+    chainId
   );
 
   if (positions.length === 0) {
     logger.warn("No V3 positions found");
-    logger.info("\nAdd liquidity using: npm run liquidity:native-v3:mainnet");
+    logger.info("\nAdd liquidity using: npm run liquidity:native-v3");
     return;
   }
 
   // Filter positions with WCAMP (native)
   const nativePositions = positions.filter(
-    (p) => p.token0 === CONTRACTS.WCAMP || p.token1 === CONTRACTS.WCAMP
+    (p) => p.token0 === contracts.WCAMP || p.token1 === contracts.WCAMP
   );
 
   if (nativePositions.length === 0) {
     logger.warn("No native CAMP V3 positions found");
-    logger.info(
-      "\nAdd native liquidity using: npm run liquidity:native-v3:mainnet"
-    );
+    logger.info("\nAdd native liquidity using: npm run liquidity:native-v3");
     return;
   }
 
@@ -1033,10 +1032,10 @@ async function viewV3NativePositions(publicClient: any, userAddress: Address) {
 
   for (const pos of nativePositions) {
     const [token0Info, token1Info] = await Promise.all([
-      pos.token0 === CONTRACTS.WCAMP
+      pos.token0 === contracts.WCAMP
         ? { symbol: "CAMP", decimals: 18 }
         : LiquidityHelpers.getTokenInfo(publicClient, pos.token0, userAddress),
-      pos.token1 === CONTRACTS.WCAMP
+      pos.token1 === contracts.WCAMP
         ? { symbol: "CAMP", decimals: 18 }
         : LiquidityHelpers.getTokenInfo(publicClient, pos.token1, userAddress),
     ]);
@@ -1052,7 +1051,8 @@ async function viewV3NativePositions(publicClient: any, userAddress: Address) {
       publicClient,
       pos.token0,
       pos.token1,
-      pos.fee
+      pos.fee,
+      chainId
     );
 
     const inRange =
@@ -1106,9 +1106,9 @@ async function viewV3NativePositions(publicClient: any, userAddress: Address) {
   }
 
   logger.info("\n📋 Management Options:");
-  logger.info("  • Add more liquidity: npm run liquidity:native-v3:mainnet");
-  logger.info("  • Remove liquidity: npm run liquidity:native-v3:mainnet");
-  logger.info("  • Collect fees: npm run liquidity:native-v3:mainnet");
+  logger.info("  • Add more liquidity: npm run liquidity:native-v3");
+  logger.info("  • Remove liquidity: npm run liquidity:native-v3");
+  logger.info("  • Collect fees: npm run liquidity:native-v3");
 }
 
 main().catch((error) => {

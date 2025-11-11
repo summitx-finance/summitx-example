@@ -5,6 +5,30 @@
 
 import { ChainId } from "@summitx/chains";
 import type { Address } from "viem";
+import {
+  DAI_ADDRESS as TESTNET_DAI,
+  MIXED_ROUTE_QUOTER_ADDRESS as TESTNET_MIXED_QUOTER,
+  SMART_ROUTER_ADDRESS as TESTNET_SMART_ROUTER,
+  USDC_ADDRESS as TESTNET_USDC,
+  USDT_ADDRESS as TESTNET_USDT,
+  V2_FACTORY_ADDRESS as TESTNET_V2_FACTORY,
+  V2_ROUTER_ADDRESS as TESTNET_V2_ROUTER,
+  V3_QUOTER_ADDRESS as TESTNET_V3_QUOTER,
+  WBTC_ADDRESS as TESTNET_WBTC,
+  WCAMP_ADDRESS as TESTNET_WCAMP,
+  WETH_ADDRESS as TESTNET_WETH,
+  basecampTestnet,
+} from "./base-testnet";
+import {
+  MIXED_ROUTE_QUOTER_ADDRESS as MAINNET_MIXED_QUOTER,
+  SMART_ROUTER_ADDRESS as MAINNET_SMART_ROUTER,
+  USDC_ADDRESS as MAINNET_USDC,
+  V2_FACTORY_ADDRESS as MAINNET_V2_FACTORY,
+  V2_ROUTER_ADDRESS as MAINNET_V2_ROUTER,
+  V3_QUOTER_ADDRESS as MAINNET_V3_QUOTER,
+  WCAMP_ADDRESS as MAINNET_WCAMP,
+  campMainnet,
+} from "./camp-mainnet";
 
 // Type for chain-specific addresses
 export type ChainMap<T> = {
@@ -14,25 +38,57 @@ export type ChainMap<T> = {
 
 // WCAMP addresses
 export const WCAMP_ADDRESSES: ChainMap<Address> = {
-  [ChainId.BASECAMP_TESTNET]: "0x1aE9c40eCd2DD6ad5858E5430A556d7aff28A44b",
-  [ChainId.BASECAMP]: "0x3bd5C81a8Adf3355078Dc5F73c41d3194B316690",
+  [ChainId.BASECAMP_TESTNET]: TESTNET_WCAMP as Address,
+  [ChainId.BASECAMP]: MAINNET_WCAMP as Address,
 };
 
 // DEX Router addresses
 export const SMART_ROUTER_ADDRESSES: ChainMap<Address> = {
-  [ChainId.BASECAMP_TESTNET]: "0x197b7c9fC5c8AeA84Ab2909Bf94f24370539722D",
-  [ChainId.BASECAMP]: "0xA688154E04544A9bc8F10F7B6717bF67d2fFCe9A",
+  [ChainId.BASECAMP_TESTNET]: TESTNET_SMART_ROUTER as Address,
+  [ChainId.BASECAMP]: MAINNET_SMART_ROUTER as Address,
 };
 
 export const V2_ROUTER_ADDRESSES: ChainMap<Address> = {
-  [ChainId.BASECAMP_TESTNET]: "0x03B38A5C3cf55cB3B8D61Dc7eaB7BBC0ec276708",
-  [ChainId.BASECAMP]: "0x38F7EE129C72ca0192eB58222942A88B7B33CC3C",
+  [ChainId.BASECAMP_TESTNET]: TESTNET_V2_ROUTER as Address,
+  [ChainId.BASECAMP]: MAINNET_V2_ROUTER as Address,
+};
+
+// Launchpad addresses
+// TODO: Update with actual Launchpad addresses
+export const LAUNCHPAD_ADDRESSES: ChainMap<Address> = {
+  [ChainId.BASECAMP_TESTNET]:
+    "0x8cF89848e90e4f8F0A958BC9fb2Adb12A2cdC00e" as Address, // Placeholder
+  [ChainId.BASECAMP]: "0xaf433dAB9E231b3c213a05209699ce0bD9Ff3e75" as Address, // Placeholder
+};
+
+// ReferralRouter addresses (Launchpad)
+// TODO: Update with actual ReferralRouter addresses
+export const REFERRAL_ROUTER_ADDRESSES: ChainMap<Address> = {
+  [ChainId.BASECAMP_TESTNET]:
+    "0x5FBFA3c89bB668F2F8a761Cb16088A696E56205f" as Address, // Placeholder
+  [ChainId.BASECAMP]: "0x4cf695b263b9b7D8695A761Ee9A666f7B37D3b28" as Address, // Placeholder
+};
+
+// AccessRegistry addresses (Launchpad Access Control)
+// TODO: Update with actual AccessRegistry addresses
+export const ACCESS_REGISTRY_ADDRESSES: ChainMap<Address> = {
+  [ChainId.BASECAMP_TESTNET]:
+    "0xD955DC13aE93656e494537d0caC191F4049Af363" as Address, // Placeholder
+  [ChainId.BASECAMP]: "0xCA487F7745149cf3bE0781F0E180c313B08123ea" as Address, // Placeholder
+};
+
+// ReferralHandlerV2 addresses (Referral System)
+// TODO: Update with actual ReferralHandlerV2 addresses
+export const REFERRAL_HANDLER_V2_ADDRESSES: ChainMap<Address> = {
+  [ChainId.BASECAMP_TESTNET]:
+    "0x66d06304b79612864ABF9AB66BEF5d1617305a7A" as Address, // TODO: Add actual address
+  [ChainId.BASECAMP]: "0x5EdF801128cf1F3091576E907E3ca6052b6D0677" as Address, // TODO: Add actual address
 };
 
 // Factory addresses
 export const V2_FACTORY_ADDRESSES: ChainMap<Address> = {
-  [ChainId.BASECAMP_TESTNET]: "0xFe5498944B504FBf57DE0C76FB770974C0C54821",
-  [ChainId.BASECAMP]: "0x726ca2CB6bbFd7E288626f71A64E55A12ADf7cc7",
+  [ChainId.BASECAMP_TESTNET]: TESTNET_V2_FACTORY as Address,
+  [ChainId.BASECAMP]: MAINNET_V2_FACTORY as Address,
 };
 
 export const V3_FACTORY_ADDRESSES: ChainMap<Address> = {
@@ -40,96 +96,65 @@ export const V3_FACTORY_ADDRESSES: ChainMap<Address> = {
   [ChainId.BASECAMP]: "0xBa08235b05d06A8A27822faCF3BaBeF4f972BF7d",
 };
 
-export const STABLE_FACTORY_ADDRESSES: ChainMap<Address> = {
-  [ChainId.BASECAMP_TESTNET]: "0xe6DF37F17A2261E6716E8B983cB8136581d02A8f",
-  [ChainId.BASECAMP]: "0xe6DF37F17A2261E6716E8B983cB8136581d02A8f",
-};
-
 // Position managers
 export const NFT_POSITION_MANAGER_ADDRESSES: ChainMap<Address> = {
-  [ChainId.BASECAMP_TESTNET]: "0x86e08b14ABb30d4E19811EC5C42074b87f6E46b1",
+  [ChainId.BASECAMP_TESTNET]: "0x3D1b19d5cEa9770A0e62296c4CCC7658ccdf127C",
   [ChainId.BASECAMP]: "0x1D96b819DE6AE9Bab504Fb16E5273FCFA9A0Ff18",
-};
-
-export const MASTER_CHEF_V3_ADDRESSES: ChainMap<Address> = {
-  [ChainId.BASECAMP_TESTNET]: "0xe9AE2Ea3B0edb4763a6Ca3Ee72e3f69D59db3Efb",
-  [ChainId.BASECAMP]: "0xe9AE2Ea3B0edb4763a6Ca3Ee72e3f69D59db3Efb",
 };
 
 // Quoter addresses
 export const QUOTER_V2_ADDRESSES: ChainMap<Address> = {
-  [ChainId.BASECAMP_TESTNET]: "0x74b9D86e58dD86df5DA0e4B640bF1352f24624e5",
-  [ChainId.BASECAMP]: "0xb9c37ab1abAD8DdD0F880C8A014fF7e9Eb5C2B60",
+  [ChainId.BASECAMP_TESTNET]: TESTNET_V3_QUOTER as Address,
+  [ChainId.BASECAMP]: MAINNET_V3_QUOTER as Address,
 };
 
 export const MIXED_ROUTE_QUOTER_ADDRESSES: ChainMap<Address> = {
-  [ChainId.BASECAMP_TESTNET]: "0xD96FE6bA10ced8C93f4Dd87819f432Cb97ED1dF0",
-  [ChainId.BASECAMP]: "0x465220a91ac19a7da174FFacA3178738034c2AB7",
+  [ChainId.BASECAMP_TESTNET]: TESTNET_MIXED_QUOTER as Address,
+  [ChainId.BASECAMP]: MAINNET_MIXED_QUOTER as Address,
 };
 
 // Multicall addresses
 export const MULTICALL3_ADDRESSES: ChainMap<Address> = {
-  [ChainId.BASECAMP_TESTNET]: "0xe70E6Acc51fc76ceCd98ae97bD3052e3aD02Db31",
-  [ChainId.BASECAMP]: "0x9C585cbD20C7770E234e4184b840034395581101",
-};
-
-// Stable swap addresses
-export const STABLE_SWAP_FACTORY_ADDRESSES: ChainMap<Address> = {
-  [ChainId.BASECAMP_TESTNET]: "0xe6DF37F17A2261E6716E8B983cB8136581d02A8f",
-  [ChainId.BASECAMP]: "0xe6DF37F17A2261E6716E8B983cB8136581d02A8f",
-};
-
-export const STABLE_SWAP_INFO_ADDRESSES: ChainMap<Address> = {
-  [ChainId.BASECAMP_TESTNET]: "0x30D33e1b36E4c8BDB638587e88572B6B1c1B26aa",
-  [ChainId.BASECAMP]: "0x30D33e1b36E4c8BDB638587e88572B6B1c1B26aa",
+  [ChainId.BASECAMP_TESTNET]: basecampTestnet.contracts.multicall3.address,
+  [ChainId.BASECAMP]: campMainnet.contracts.multicall3.address,
 };
 
 // Token addresses
 export const USDC_ADDRESSES: ChainMap<Address> = {
-  [ChainId.BASECAMP_TESTNET]: "0x71002dbf6cC7A885cE6563682932370c056aAca9",
-  [ChainId.BASECAMP]: "0x977fdEF62CE095Ae8750Fd3496730F24F60dea7a",
+  [ChainId.BASECAMP_TESTNET]: TESTNET_USDC as Address,
+  [ChainId.BASECAMP]: MAINNET_USDC as Address,
 };
 
 export const USDT_ADDRESSES: ChainMap<Address> = {
-  [ChainId.BASECAMP_TESTNET]: "0xA745f7A59E70205e6040BdD3b33eD21DBD23FEB3",
-  [ChainId.BASECAMP]: "0xA745f7A59E70205e6040BdD3b33eD21DBD23FEB3", // Placeholder - needs actual mainnet address
+  [ChainId.BASECAMP_TESTNET]: TESTNET_USDT as Address,
+  [ChainId.BASECAMP]: TESTNET_USDT as Address, // Using testnet address as placeholder for mainnet
 };
 
 export const DAI_ADDRESSES: ChainMap<Address> = {
-  [ChainId.BASECAMP_TESTNET]: "0x5d3011cCc6d3431D671c9e69EEddA9C5C654B97F",
-  [ChainId.BASECAMP]: "0x5d3011cCc6d3431D671c9e69EEddA9C5C654B97F", // Placeholder - needs actual mainnet address
+  [ChainId.BASECAMP_TESTNET]: TESTNET_DAI as Address,
+  [ChainId.BASECAMP]: TESTNET_DAI as Address, // Using testnet address as placeholder for mainnet
 };
 
 export const WBTC_ADDRESSES: ChainMap<Address> = {
-  [ChainId.BASECAMP_TESTNET]: "0x587aF234D373C752a6F6E9eD6c4Ce871E7528BCF",
-  [ChainId.BASECAMP]: "0x587aF234D373C752a6F6E9eD6c4Ce871E7528BCF", // Placeholder - needs actual mainnet address
+  [ChainId.BASECAMP_TESTNET]: TESTNET_WBTC as Address,
+  [ChainId.BASECAMP]: TESTNET_WBTC as Address, // Using testnet address as placeholder for mainnet
 };
 
 export const WETH_ADDRESSES: ChainMap<Address> = {
-  [ChainId.BASECAMP_TESTNET]: "0xC42BAA20e3a159cF7A8aDFA924648C2a2d59E062",
-  [ChainId.BASECAMP]: "0xC42BAA20e3a159cF7A8aDFA924648C2a2d59E062", // Placeholder - needs actual mainnet address
+  [ChainId.BASECAMP_TESTNET]: TESTNET_WETH as Address,
+  [ChainId.BASECAMP]: TESTNET_WETH as Address, // Using testnet address as placeholder for mainnet
 };
 
 // RPC URLs
 export const RPC_URLS: ChainMap<string[]> = {
-  [ChainId.BASECAMP_TESTNET]: [
-    "https://rpc-campnetwork.xyz",
-  ],
-  [ChainId.BASECAMP]: [
-    "https://rpc.camp.raas.gelato.cloud",
-  ],
+  [ChainId.BASECAMP_TESTNET]: basecampTestnet.rpcUrls.default.http,
+  [ChainId.BASECAMP]: campMainnet.rpcUrls.default.http,
 };
 
 // Block explorers
 export const BLOCK_EXPLORERS: ChainMap<{ name: string; url: string }> = {
-  [ChainId.BASECAMP_TESTNET]: {
-    name: "Basecamp Explorer",
-    url: "https://basecamp.cloud.blockscout.com",
-  },
-  [ChainId.BASECAMP]: {
-    name: "Camp Explorer",
-    url: "https://explorer.camp.raas.gelato.cloud",
-  },
+  [ChainId.BASECAMP_TESTNET]: basecampTestnet.blockExplorers.default,
+  [ChainId.BASECAMP]: campMainnet.blockExplorers.default,
 };
 
 // Network names
@@ -140,10 +165,10 @@ export const NETWORK_NAMES: ChainMap<string> = {
 
 // Fee tiers for V3 pools (in basis points)
 export const V3_FEE_TIERS = {
-  LOWEST: 100,    // 0.01%
-  LOW: 500,       // 0.05%
-  MEDIUM: 3000,   // 0.3%
-  HIGH: 10000,    // 1%
+  LOWEST: 100, // 0.01%
+  LOW: 500, // 0.05%
+  MEDIUM: 3000, // 0.3%
+  HIGH: 10000, // 1%
 } as const;
 
 // Tick spacings for V3 fee tiers
@@ -162,44 +187,51 @@ export const TX_DEFAULTS = {
 } as const;
 
 // Helper function to get deadline
-export function getDeadline(minutes: number = TX_DEFAULTS.deadlineMinutes): bigint {
+export function getDeadline(
+  minutes: number = TX_DEFAULTS.deadlineMinutes
+): bigint {
   return BigInt(Math.floor(Date.now() / 1000) + minutes * 60);
 }
 
 // Helper function to apply slippage
-export function applySlippage(amount: bigint, slippageBps: bigint = TX_DEFAULTS.slippageTolerance): bigint {
+export function applySlippage(
+  amount: bigint,
+  slippageBps: bigint = TX_DEFAULTS.slippageTolerance
+): bigint {
   return (amount * (10000n - slippageBps)) / 10000n;
 }
 
 // Helper function to get contracts for a specific chain
-export function getContractsForChain(chainId: ChainId.BASECAMP_TESTNET | ChainId.BASECAMP) {
+export function getContractsForChain(
+  chainId: ChainId.BASECAMP_TESTNET | ChainId.BASECAMP
+) {
   return {
     // Tokens
     WCAMP: WCAMP_ADDRESSES[chainId],
-    
+
     // Routers
     SMART_ROUTER: SMART_ROUTER_ADDRESSES[chainId],
     V2_ROUTER: V2_ROUTER_ADDRESSES[chainId],
-    
+
     // Factories
     V2_FACTORY: V2_FACTORY_ADDRESSES[chainId],
     V3_FACTORY: V3_FACTORY_ADDRESSES[chainId],
-    STABLE_FACTORY: STABLE_FACTORY_ADDRESSES[chainId],
-    
+
     // Position Management
     NFT_POSITION_MANAGER: NFT_POSITION_MANAGER_ADDRESSES[chainId],
-    MASTER_CHEF_V3: MASTER_CHEF_V3_ADDRESSES[chainId],
-    
+
     // Quoters
     QUOTER_V2: QUOTER_V2_ADDRESSES[chainId],
     MIXED_ROUTE_QUOTER: MIXED_ROUTE_QUOTER_ADDRESSES[chainId],
-    
+
+    // Launchpad
+    LAUNCHPAD: LAUNCHPAD_ADDRESSES[chainId],
+    REFERRAL_ROUTER: REFERRAL_ROUTER_ADDRESSES[chainId],
+    ACCESS_REGISTRY: ACCESS_REGISTRY_ADDRESSES[chainId],
+    REFERRAL_HANDLER_V2: REFERRAL_HANDLER_V2_ADDRESSES[chainId],
+
     // Utilities
     MULTICALL3: MULTICALL3_ADDRESSES[chainId],
-    
-    // Stable
-    STABLE_SWAP_FACTORY: STABLE_SWAP_FACTORY_ADDRESSES[chainId],
-    STABLE_SWAP_INFO: STABLE_SWAP_INFO_ADDRESSES[chainId],
   };
 }
 
@@ -226,10 +258,7 @@ export const CHAIN_CONFIGS = {
       default: BLOCK_EXPLORERS[ChainId.BASECAMP_TESTNET],
     },
     contracts: {
-      multicall3: {
-        address: MULTICALL3_ADDRESSES[ChainId.BASECAMP_TESTNET],
-        blockCreated: 8755587,
-      },
+      multicall3: basecampTestnet.contracts.multicall3,
     },
   },
   [ChainId.BASECAMP]: {
@@ -253,10 +282,7 @@ export const CHAIN_CONFIGS = {
       default: BLOCK_EXPLORERS[ChainId.BASECAMP],
     },
     contracts: {
-      multicall3: {
-        address: MULTICALL3_ADDRESSES[ChainId.BASECAMP],
-        blockCreated: 0,
-      },
+      multicall3: campMainnet.contracts.multicall3,
     },
   },
 };

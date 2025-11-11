@@ -14,10 +14,9 @@ import { privateKeyToAccount } from "viem/accounts";
 import {
   basecampTestnet,
   baseCampTestnetTokens,
-  V2_FACTORY_ADDRESS,
-  V2_ROUTER_ADDRESS,
-  WCAMP_ADDRESS,
 } from "../config/base-testnet";
+import { getContractsForChain } from "../config/chains";
+import { ChainId } from "@summitx/chains";
 import { logger } from "../utils/logger";
 import { approveTokenWithWait } from "../utils/transaction-helpers";
 
@@ -93,7 +92,7 @@ async function getPairInfo(
 ) {
   // Get pair address
   const pairAddress = await publicClient.readContract({
-    address: V2_FACTORY_ADDRESS,
+    address: contracts.V2_FACTORY,
     abi: V2_FACTORY_ABI,
     functionName: "getPair",
     args: [tokenA, tokenB],
@@ -158,7 +157,7 @@ async function calculateOptimalAmounts(
 
   // Calculate optimal amount B based on current reserves
   const amountBOptimal = await publicClient.readContract({
-    address: V2_ROUTER_ADDRESS,
+    address: contracts.V2_ROUTER,
     abi: V2_ROUTER_ABI,
     functionName: "quote",
     args: [amountA, pairInfo.reserveA, pairInfo.reserveB],
@@ -176,6 +175,8 @@ async function main() {
   logger.header("💧 Add Liquidity V2 Example");
   logger.info("Add liquidity to V2 AMM pools on Base Camp Testnet");
   logger.divider();
+
+  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
 
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");
@@ -197,16 +198,19 @@ async function main() {
 
   logger.info(`Wallet address: ${account.address}`);
 
+  // Define available tokens for liquidity
+  const LIQUIDITY_TOKENS = [
+    baseCampTestnetTokens.wcamp,
+    baseCampTestnetTokens.usdc,
+    baseCampTestnetTokens.usdt,
+    baseCampTestnetTokens.dai,
+    baseCampTestnetTokens.weth,
+    baseCampTestnetTokens.wbtc,
+  ];
+
   try {
     // Get available tokens
-    const tokens = [
-      baseCampTestnetTokens.wcamp,
-      baseCampTestnetTokens.usdc,
-      baseCampTestnetTokens.usdt,
-      baseCampTestnetTokens.dai,
-      baseCampTestnetTokens.weth,
-      baseCampTestnetTokens.wbtc,
-    ];
+    const tokens = LIQUIDITY_TOKENS;
 
     // Get token balances
     logger.info("\n📊 Available tokens:");
@@ -372,7 +376,7 @@ async function main() {
       walletClient,
       publicClient,
       tokenA.address,
-      V2_ROUTER_ADDRESS as Address,
+      contracts.V2_ROUTER as Address,
       amountA,
       tokenA.symbol,
       3000 // 3 second wait after approval
@@ -381,7 +385,7 @@ async function main() {
       walletClient,
       publicClient,
       tokenB.address,
-      V2_ROUTER_ADDRESS as Address,
+      contracts.V2_ROUTER as Address,
       amountB,
       tokenB.symbol,
       3000 // 3 second wait after approval
@@ -395,9 +399,9 @@ async function main() {
 
     // Check if one of the tokens is WCAMP and user wants to use native CAMP
     const isTokenAWCAMP =
-      tokenA.address.toLowerCase() === WCAMP_ADDRESS.toLowerCase();
+      tokenA.address.toLowerCase() === contracts.WCAMP.toLowerCase();
     const isTokenBWCAMP =
-      tokenB.address.toLowerCase() === WCAMP_ADDRESS.toLowerCase();
+      tokenB.address.toLowerCase() === contracts.WCAMP.toLowerCase();
 
     if (isTokenAWCAMP || isTokenBWCAMP) {
       // Check native balance
@@ -443,7 +447,7 @@ async function main() {
 
         // Use addLiquidityETH for native CAMP
         txHash = await walletClient.writeContract({
-          address: V2_ROUTER_ADDRESS as Address,
+          address: contracts.V2_ROUTER as Address,
           abi: V2_ROUTER_ABI,
           functionName: "addLiquidityETH",
           args: [
@@ -459,7 +463,7 @@ async function main() {
       } else {
         // Regular add liquidity with WCAMP
         txHash = await walletClient.writeContract({
-          address: V2_ROUTER_ADDRESS as Address,
+          address: contracts.V2_ROUTER as Address,
           abi: V2_ROUTER_ABI,
           functionName: "addLiquidity",
           args: [
@@ -477,7 +481,7 @@ async function main() {
     } else {
       // Regular add liquidity
       txHash = await walletClient.writeContract({
-        address: V2_ROUTER_ADDRESS as Address,
+        address: contracts.V2_ROUTER as Address,
         abi: V2_ROUTER_ABI,
         functionName: "addLiquidity",
         args: [

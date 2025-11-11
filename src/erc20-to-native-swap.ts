@@ -1,3 +1,4 @@
+import { ChainId } from "@summitx/chains";
 import { SwapRouter } from "@summitx/smart-router/evm";
 import { Percent, TradeType } from "@summitx/swap-sdk-core";
 import { config } from "dotenv";
@@ -11,12 +12,8 @@ import {
   type Hex,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import {
-  basecampTestnet,
-  baseCampTestnetTokens,
-  SMART_ROUTER_ADDRESS,
-  WCAMP_ADDRESS,
-} from "./config/base-testnet";
+import { basecampTestnet, baseCampTestnetTokens } from "./config/base-testnet";
+import { getContractsForChain } from "./config/chains";
 import { TokenQuoter } from "./quoter/token-quoter";
 import { logger } from "./utils/logger";
 import {
@@ -42,6 +39,8 @@ async function main() {
   logger.info("Swapping USDC to CAMP (native) - includes automatic unwrap");
   logger.divider();
 
+  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
+
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");
     process.exit(1);
@@ -62,18 +61,29 @@ async function main() {
 
   logger.info(`Wallet address: ${account.address}`);
 
-  // Check USDC balance
-  const usdcBalance = await publicClient.readContract({
-    address: baseCampTestnetTokens.usdc.address as Address,
+  // Define tokens to use throughout the file
+  const INPUT_TOKEN = baseCampTestnetTokens.usdc;
+  const OUTPUT_TOKEN = baseCampTestnetTokens.wcamp; // WCAMP for native swaps
+
+  // Check input token balance
+  const inputBalance = await publicClient.readContract({
+    address: INPUT_TOKEN.address as Address,
     abi: ERC20_ABI,
     functionName: "balanceOf",
     args: [account.address],
   });
 
-  logger.info(`USDC Balance: ${formatUnits(usdcBalance, 6)}`);
+  logger.info(
+    `${INPUT_TOKEN.symbol} Balance: ${formatUnits(
+      inputBalance,
+      INPUT_TOKEN.decimals
+    )}`
+  );
 
-  if (usdcBalance < parseUnits("0.5", 6)) {
-    logger.error("Insufficient USDC balance. Need at least 0.5 USDC");
+  if (inputBalance < parseUnits("0.5", INPUT_TOKEN.decimals)) {
+    logger.error(
+      `Insufficient ${INPUT_TOKEN.symbol} balance. Need at least 0.5 ${INPUT_TOKEN.symbol}`
+    );
     process.exit(1);
   }
 
@@ -92,26 +102,28 @@ async function main() {
     await delay(2000);
 
     // Define swap amount
-    const swapAmount = "0.5"; // 0.5 USDC
+    const swapAmount = "0.5"; // 0.5 of input token
 
-    logger.info(`Getting quote for ${swapAmount} USDC → CAMP...`);
+    logger.info(
+      `Getting quote for ${swapAmount} ${INPUT_TOKEN.symbol} → CAMP...`
+    );
 
     // Get quote - first get to WCAMP, then we'll unwrap
     const quote = await quoter.getQuote(
-      baseCampTestnetTokens.usdc,
-      baseCampTestnetTokens.wcamp,
+      INPUT_TOKEN,
+      OUTPUT_TOKEN,
       swapAmount,
       TradeType.EXACT_INPUT,
       false
     );
 
     if (!quote || !quote.rawTrade) {
-      logger.error("No route found for USDC → CAMP");
+      logger.error(`No route found for ${INPUT_TOKEN.symbol} → CAMP`);
       process.exit(1);
     }
 
     logger.success("Quote received:", {
-      input: `${swapAmount} USDC`,
+      input: `${swapAmount} ${INPUT_TOKEN.symbol}`,
       output: `${quote.outputAmount} CAMP`,
       priceImpact: quote.priceImpact,
       route: quote.route,
@@ -122,17 +134,20 @@ async function main() {
       address: account.address,
     });
     logger.info(
-      `Initial CAMP balance: ${formatUnits(initialNativeBalance, 18)}`
+      `Initial CAMP balance: ${formatUnits(
+        initialNativeBalance,
+        basecampTestnet.nativeCurrency.decimals
+      )}`
     );
 
-    // Approve USDC with waiting period
+    // Approve input token with waiting period
     await approveTokenWithWait(
       walletClient,
       publicClient,
-      baseCampTestnetTokens.usdc.address as Address,
-      SMART_ROUTER_ADDRESS as Address,
-      parseUnits(swapAmount, 6),
-      "USDC",
+      INPUT_TOKEN.address as Address,
+      contracts.SMART_ROUTER as Address,
+      parseUnits(swapAmount, INPUT_TOKEN.decimals),
+      INPUT_TOKEN.symbol,
       3000 // 3 second wait after approval
     );
 
@@ -150,15 +165,20 @@ async function main() {
 
     // Check if WCAMP balance before (for debugging)
     const wcampBalanceBefore = await publicClient.readContract({
-      address: WCAMP_ADDRESS as Address,
+      address: OUTPUT_TOKEN.address as Address,
       abi: ERC20_ABI,
       functionName: "balanceOf",
       args: [account.address],
     });
-    logger.info(`WCAMP balance before: ${formatUnits(wcampBalanceBefore, 18)}`);
+    logger.info(
+      `WCAMP balance before: ${formatUnits(
+        wcampBalanceBefore,
+        OUTPUT_TOKEN.decimals
+      )}`
+    );
 
     const swapHash = await walletClient.sendTransaction({
-      to: SMART_ROUTER_ADDRESS as Address,
+      to: contracts.SMART_ROUTER as Address,
       data: methodParameters.calldata,
       value: 0n, // No native value for ERC20 swaps
     });
@@ -173,13 +193,13 @@ async function main() {
     // Check balances after swap
     const [wcampBalanceAfter, finalUsdcBalance] = await Promise.all([
       publicClient.readContract({
-        address: WCAMP_ADDRESS as Address,
+        address: OUTPUT_TOKEN.address as Address,
         abi: ERC20_ABI,
         functionName: "balanceOf",
         args: [account.address],
       }),
       publicClient.readContract({
-        address: baseCampTestnetTokens.usdc.address as Address,
+        address: INPUT_TOKEN.address as Address,
         abi: ERC20_ABI,
         functionName: "balanceOf",
         args: [account.address],
@@ -187,7 +207,10 @@ async function main() {
     ]);
 
     logger.info(
-      `WCAMP balance after swap: ${formatUnits(wcampBalanceAfter, 18)}`
+      `WCAMP balance after swap: ${formatUnits(
+        wcampBalanceAfter,
+        OUTPUT_TOKEN.decimals
+      )}`
     );
     const wcampReceived = wcampBalanceAfter - wcampBalanceBefore;
 
@@ -196,7 +219,7 @@ async function main() {
       logger.info(
         `Received ${formatUnits(
           wcampReceived,
-          18
+          OUTPUT_TOKEN.decimals
         )} WCAMP, unwrapping to native CAMP...`
       );
 
@@ -212,7 +235,7 @@ async function main() {
       ] as const;
 
       const unwrapHash = await walletClient.writeContract({
-        address: WCAMP_ADDRESS as Address,
+        address: OUTPUT_TOKEN.address as Address,
         abi: WETH_ABI,
         functionName: "withdraw",
         args: [wcampReceived],
@@ -232,21 +255,19 @@ async function main() {
     const finalNativeBalance = await publicClient.getBalance({
       address: account.address,
     });
-    const nativeReceived =
-      finalNativeBalance -
-      initialNativeBalance +
-      receipt.gasUsed * receipt.effectiveGasPrice;
 
     logger.success("Balance changes:", {
-      USDC: `${formatUnits(usdcBalance, 6)} → ${formatUnits(
-        finalUsdcBalance,
-        6
-      )}`,
-      "Native CAMP": `${formatUnits(initialNativeBalance, 18)} → ${formatUnits(
+      [INPUT_TOKEN.symbol]: `${formatUnits(
+        inputBalance,
+        INPUT_TOKEN.decimals
+      )} → ${formatUnits(finalUsdcBalance, INPUT_TOKEN.decimals)}`,
+      "Native CAMP": `${formatUnits(
+        initialNativeBalance,
+        basecampTestnet.nativeCurrency.decimals
+      )} → ${formatUnits(
         finalNativeBalance,
-        18
+        basecampTestnet.nativeCurrency.decimals
       )}`,
-      "Approx CAMP received": formatUnits(nativeReceived, 18),
     });
   } catch (error: any) {
     if (error?.message?.includes("429")) {

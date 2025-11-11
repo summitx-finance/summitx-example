@@ -9,7 +9,9 @@ import {
   type Hex,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { WCAMP_ADDRESS, basecampTestnet } from "./config/base-testnet";
+import { basecampTestnet } from "./config/base-testnet";
+import { getContractsForChain } from "./config/chains";
+import { ChainId } from "@summitx/chains";
 import { logger } from "./utils/logger";
 
 config();
@@ -46,6 +48,8 @@ const WETH_ABI = [
 ] as const;
 
 async function main() {
+  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
+
   logger.header("Wrap/Unwrap Example - Base Camp Testnet");
 
   if (!process.env.PRIVATE_KEY) {
@@ -74,7 +78,7 @@ async function main() {
     });
 
     const wethBalance = await publicClient.readContract({
-      address: WCAMP_ADDRESS as Address,
+      address: contracts.WCAMP as Address,
       abi: WETH_ABI,
       functionName: "balanceOf",
       args: [account.address],
@@ -91,7 +95,7 @@ async function main() {
     logger.info(`Wrapping ${formatUnits(wrapAmount, 18)} CAMP...`);
 
     const wrapHash = await walletClient.writeContract({
-      address: WCAMP_ADDRESS as Address,
+      address: contracts.WCAMP as Address,
       abi: WETH_ABI,
       functionName: "deposit",
       value: wrapAmount,
@@ -108,7 +112,7 @@ async function main() {
     );
 
     const newWethBalance = await publicClient.readContract({
-      address: WCAMP_ADDRESS as Address,
+      address: contracts.WCAMP as Address,
       abi: WETH_ABI,
       functionName: "balanceOf",
       args: [account.address],
@@ -124,7 +128,7 @@ async function main() {
       logger.info(`Unwrapping ${formatUnits(unwrapAmount, 18)} WCAMP...`);
 
       const unwrapHash = await walletClient.writeContract({
-        address: WCAMP_ADDRESS as Address,
+        address: contracts.WCAMP as Address,
         abi: WETH_ABI,
         functionName: "withdraw",
         args: [unwrapAmount],
@@ -145,7 +149,7 @@ async function main() {
       });
 
       const finalWethBalance = await publicClient.readContract({
-        address: WCAMP_ADDRESS as Address,
+        address: contracts.WCAMP as Address,
         abi: WETH_ABI,
         functionName: "balanceOf",
         args: [account.address],
@@ -174,7 +178,7 @@ async function main() {
       logger.info(`Batch wrap ${i + 1}: ${formatUnits(amount, 18)} CAMP`);
 
       const hash = await walletClient.writeContract({
-        address: WCAMP_ADDRESS as Address,
+        address: contracts.WCAMP as Address,
         abi: WETH_ABI,
         functionName: "deposit",
         value: amount,
@@ -186,7 +190,7 @@ async function main() {
     }
 
     const finalBatchWethBalance = await publicClient.readContract({
-      address: WCAMP_ADDRESS as Address,
+      address: contracts.WCAMP as Address,
       abi: WETH_ABI,
       functionName: "balanceOf",
       args: [account.address],
@@ -199,7 +203,7 @@ async function main() {
     logger.header("4. Reading WETH Contract State");
 
     const totalSupply = await publicClient.readContract({
-      address: WCAMP_ADDRESS as Address,
+      address: contracts.WCAMP as Address,
       abi: WETH_ABI,
       functionName: "totalSupply",
     });

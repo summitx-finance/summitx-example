@@ -14,8 +14,9 @@ import { privateKeyToAccount } from "viem/accounts";
 import {
   basecampTestnet,
   baseCampTestnetTokens,
-  SMART_ROUTER_ADDRESS,
 } from "./config/base-testnet";
+import { getContractsForChain } from "./config/chains";
+import { ChainId } from "@summitx/chains";
 import { TokenQuoter } from "./quoter/token-quoter";
 import { logger } from "./utils/logger";
 
@@ -62,16 +63,21 @@ async function checkAndApproveToken(
     address: tokenAddress,
     abi: ERC20_ABI,
     functionName: "allowance",
-    args: [walletAddress, SMART_ROUTER_ADDRESS],
+    args: [walletAddress, contracts.SMART_ROUTER],
   });
 
   if (allowance < amount) {
-    logger.info(`Approving ${formatUnits(amount, 18)} tokens...`);
+    logger.info(
+      `Approving ${formatUnits(
+        amount,
+        basecampTestnet.nativeCurrency.decimals
+      )} tokens...`
+    );
     const hash = await walletClient.writeContract({
       address: tokenAddress,
       abi: ERC20_ABI,
       functionName: "approve",
-      args: [SMART_ROUTER_ADDRESS, amount],
+      args: [contracts.SMART_ROUTER, amount],
     });
     await publicClient.waitForTransactionReceipt({ hash });
     logger.success("✅ Token approved");
@@ -79,6 +85,15 @@ async function checkAndApproveToken(
 }
 
 async function getBalances(publicClient: any, address: Address) {
+  // Define tokens for balance checking
+  const BALANCE_TOKENS = {
+    usdc: baseCampTestnetTokens.usdc,
+    usdt: baseCampTestnetTokens.usdt,
+    weth: baseCampTestnetTokens.weth,
+    wbtc: baseCampTestnetTokens.wbtc,
+    dai: baseCampTestnetTokens.dai,
+  };
+
   const [
     nativeBalance,
     usdcBalance,
@@ -89,31 +104,31 @@ async function getBalances(publicClient: any, address: Address) {
   ] = await Promise.all([
     publicClient.getBalance({ address }),
     publicClient.readContract({
-      address: baseCampTestnetTokens.usdc.address as Address,
+      address: BALANCE_TOKENS.usdc.address as Address,
       abi: ERC20_ABI,
       functionName: "balanceOf",
       args: [address],
     }),
     publicClient.readContract({
-      address: baseCampTestnetTokens.usdt.address as Address,
+      address: BALANCE_TOKENS.usdt.address as Address,
       abi: ERC20_ABI,
       functionName: "balanceOf",
       args: [address],
     }),
     publicClient.readContract({
-      address: baseCampTestnetTokens.weth.address as Address,
+      address: BALANCE_TOKENS.weth.address as Address,
       abi: ERC20_ABI,
       functionName: "balanceOf",
       args: [address],
     }),
     publicClient.readContract({
-      address: baseCampTestnetTokens.wbtc.address as Address,
+      address: BALANCE_TOKENS.wbtc.address as Address,
       abi: ERC20_ABI,
       functionName: "balanceOf",
       args: [address],
     }),
     publicClient.readContract({
-      address: baseCampTestnetTokens.dai.address as Address,
+      address: BALANCE_TOKENS.dai.address as Address,
       abi: ERC20_ABI,
       functionName: "balanceOf",
       args: [address],
@@ -121,12 +136,12 @@ async function getBalances(publicClient: any, address: Address) {
   ]);
 
   return {
-    native: formatUnits(nativeBalance, 18),
-    usdc: formatUnits(usdcBalance, 6),
-    usdt: formatUnits(usdtBalance, 6),
-    weth: formatUnits(wethBalance, 18),
-    wbtc: formatUnits(wbtcBalance, 18),
-    dai: formatUnits(daiBalance, 18),
+    native: formatUnits(nativeBalance, basecampTestnet.nativeCurrency.decimals),
+    usdc: formatUnits(usdcBalance, BALANCE_TOKENS.usdc.decimals),
+    usdt: formatUnits(usdtBalance, BALANCE_TOKENS.usdt.decimals),
+    weth: formatUnits(wethBalance, BALANCE_TOKENS.weth.decimals),
+    wbtc: formatUnits(wbtcBalance, BALANCE_TOKENS.wbtc.decimals),
+    dai: formatUnits(daiBalance, BALANCE_TOKENS.dai.decimals),
   };
 }
 
@@ -143,13 +158,13 @@ async function executeSwap(
     logger.info(
       `Sending ${formatUnits(
         BigInt(methodParameters.value),
-        18
+        basecampTestnet.nativeCurrency.decimals
       )} CAMP with transaction`
     );
   }
 
   const hash = await walletClient.sendTransaction({
-    to: SMART_ROUTER_ADDRESS as Address, // Use the router address directly
+    to: contracts.SMART_ROUTER as Address, // Use the router address directly
     data: methodParameters.calldata,
     value: BigInt(methodParameters.value || 0),
     // Don't specify gas, let viem estimate it
@@ -176,6 +191,8 @@ async function delay(ms: number) {
 
 async function main() {
   logger.header("🔄 Comprehensive Swap Examples - Base Camp Testnet");
+
+  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
 
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");
@@ -224,10 +241,14 @@ async function main() {
     // ============================================
     logger.header("1️⃣ Native to ERC20 Swap: CAMP → USDC");
 
+    // Define tokens for this swap
+    const NATIVE_TO_ERC20_INPUT = baseCampTestnetTokens.wcamp; // Use WCAMP for native
+    const NATIVE_TO_ERC20_OUTPUT = baseCampTestnetTokens.usdc;
+
     const nativeToErc20Amount = "1"; // 1 CAMP
     const nativeToErc20Quote = await quoter.getQuote(
-      baseCampTestnetTokens.wcamp, // Use WCAMP for native
-      baseCampTestnetTokens.usdc,
+      NATIVE_TO_ERC20_INPUT,
+      NATIVE_TO_ERC20_OUTPUT,
       nativeToErc20Amount, // Pass decimal string
       TradeType.EXACT_INPUT,
       false // Don't adjust for gas like execute-swap-interface-style
@@ -236,7 +257,7 @@ async function main() {
     if (nativeToErc20Quote) {
       logger.info("Quote received:", {
         input: `${nativeToErc20Amount} CAMP`,
-        output: `${nativeToErc20Quote.outputAmount} USDC`,
+        output: `${nativeToErc20Quote.outputAmount} ${NATIVE_TO_ERC20_OUTPUT.symbol}`,
         priceImpact: nativeToErc20Quote.priceImpact,
       });
 
@@ -253,7 +274,10 @@ async function main() {
       });
 
       // For native token swap, ensure value is set
-      const swapValue = parseUnits(nativeToErc20Amount, 18); // Native CAMP has 18 decimals
+      const swapValue = parseUnits(
+        nativeToErc20Amount,
+        basecampTestnet.nativeCurrency.decimals
+      ); // Native CAMP has 18 decimals
       methodParameters.value = swapValue.toString();
 
       await executeSwap(
@@ -272,10 +296,14 @@ async function main() {
     // ============================================
     logger.header("2️⃣ ERC20 to Native Swap: USDC → CAMP");
 
+    // Define tokens for this swap
+    const ERC20_TO_NATIVE_INPUT = baseCampTestnetTokens.usdc;
+    const ERC20_TO_NATIVE_OUTPUT = baseCampTestnetTokens.wcamp; // Use WCAMP for native
+
     const erc20ToNativeAmount = "1"; // 1 USDC
     const erc20ToNativeQuote = await quoter.getQuote(
-      baseCampTestnetTokens.usdc,
-      baseCampTestnetTokens.wcamp, // Use WCAMP for native
+      ERC20_TO_NATIVE_INPUT,
+      ERC20_TO_NATIVE_OUTPUT,
       erc20ToNativeAmount, // Pass decimal string
       TradeType.EXACT_INPUT,
       false // Don't adjust for gas
@@ -283,17 +311,17 @@ async function main() {
 
     if (erc20ToNativeQuote) {
       logger.info("Quote received:", {
-        input: `${erc20ToNativeAmount} USDC`,
+        input: `${erc20ToNativeAmount} ${ERC20_TO_NATIVE_INPUT.symbol}`,
         output: `${erc20ToNativeQuote.outputAmount} CAMP`,
         priceImpact: erc20ToNativeQuote.priceImpact,
       });
 
-      // Approve USDC
+      // Approve input token
       await checkAndApproveToken(
         walletClient,
         publicClient,
-        baseCampTestnetTokens.usdc.address as Address,
-        parseUnits(erc20ToNativeAmount, 6),
+        ERC20_TO_NATIVE_INPUT.address as Address,
+        parseUnits(erc20ToNativeAmount, ERC20_TO_NATIVE_INPUT.decimals),
         account.address
       );
 
@@ -328,10 +356,14 @@ async function main() {
     // ============================================
     logger.header("3️⃣ ERC20 to ERC20 Swap: USDC → USDT");
 
-    const erc20ToErc20Amount = "1"; // 1 USDC
+    // Define tokens for this swap
+    const ERC20_TO_ERC20_INPUT = baseCampTestnetTokens.usdc;
+    const ERC20_TO_ERC20_OUTPUT = baseCampTestnetTokens.usdt;
+
+    const erc20ToErc20Amount = "1"; // 1 of input token
     const erc20ToErc20Quote = await quoter.getQuote(
-      baseCampTestnetTokens.usdc,
-      baseCampTestnetTokens.usdt,
+      ERC20_TO_ERC20_INPUT,
+      ERC20_TO_ERC20_OUTPUT,
       erc20ToErc20Amount, // Pass decimal string
       TradeType.EXACT_INPUT,
       false // Don't adjust for gas
@@ -339,17 +371,17 @@ async function main() {
 
     if (erc20ToErc20Quote) {
       logger.info("Quote received:", {
-        input: `${erc20ToErc20Amount} USDC`,
-        output: `${erc20ToErc20Quote.outputAmount} USDT`,
+        input: `${erc20ToErc20Amount} ${ERC20_TO_ERC20_INPUT.symbol}`,
+        output: `${erc20ToErc20Quote.outputAmount} ${ERC20_TO_ERC20_OUTPUT.symbol}`,
         priceImpact: erc20ToErc20Quote.priceImpact,
       });
 
-      // Approve USDC
+      // Approve input token
       await checkAndApproveToken(
         walletClient,
         publicClient,
-        baseCampTestnetTokens.usdc.address as Address,
-        parseUnits(erc20ToErc20Amount, 6),
+        ERC20_TO_ERC20_INPUT.address as Address,
+        parseUnits(erc20ToErc20Amount, ERC20_TO_ERC20_INPUT.decimals),
         account.address
       );
 
@@ -381,10 +413,14 @@ async function main() {
     // ============================================
     logger.header("4️⃣ ERC20 to ERC20 Swap: WETH → WBTC");
 
+    // Define tokens for this swap
+    const WETH_TO_WBTC_INPUT = baseCampTestnetTokens.weth;
+    const WETH_TO_WBTC_OUTPUT = baseCampTestnetTokens.wbtc;
+
     const wethToWbtcAmount = "0.001"; // 0.001 WETH
     const wethToWbtcQuote = await quoter.getQuote(
-      baseCampTestnetTokens.weth,
-      baseCampTestnetTokens.wbtc,
+      WETH_TO_WBTC_INPUT,
+      WETH_TO_WBTC_OUTPUT,
       wethToWbtcAmount, // Pass decimal string
       TradeType.EXACT_INPUT,
       false // Don't adjust for gas
@@ -392,17 +428,17 @@ async function main() {
 
     if (wethToWbtcQuote) {
       logger.info("Quote received:", {
-        input: `${wethToWbtcAmount} WETH`,
-        output: `${wethToWbtcQuote.outputAmount} WBTC`,
+        input: `${wethToWbtcAmount} ${WETH_TO_WBTC_INPUT.symbol}`,
+        output: `${wethToWbtcQuote.outputAmount} ${WETH_TO_WBTC_OUTPUT.symbol}`,
         priceImpact: wethToWbtcQuote.priceImpact,
       });
 
-      // Approve WETH
+      // Approve input token
       await checkAndApproveToken(
         walletClient,
         publicClient,
-        baseCampTestnetTokens.weth.address as Address,
-        parseUnits(wethToWbtcAmount, 18),
+        WETH_TO_WBTC_INPUT.address as Address,
+        parseUnits(wethToWbtcAmount, WETH_TO_WBTC_INPUT.decimals),
         account.address
       );
 
@@ -434,10 +470,14 @@ async function main() {
     // ============================================
     logger.header("5️⃣ ERC20 to ERC20 Swap: USDC → DAI");
 
+    // Define tokens for this swap
+    const USDC_TO_DAI_INPUT = baseCampTestnetTokens.usdc;
+    const USDC_TO_DAI_OUTPUT = baseCampTestnetTokens.dai;
+
     const usdcToDaiAmount = "1"; // 1 USDC
     const usdcToDaiQuote = await quoter.getQuote(
-      baseCampTestnetTokens.usdc,
-      baseCampTestnetTokens.dai,
+      USDC_TO_DAI_INPUT,
+      USDC_TO_DAI_OUTPUT,
       usdcToDaiAmount, // Pass decimal string
       TradeType.EXACT_INPUT,
       false // Don't adjust for gas
@@ -445,17 +485,17 @@ async function main() {
 
     if (usdcToDaiQuote) {
       logger.info("Quote received:", {
-        input: `${usdcToDaiAmount} USDC`,
-        output: `${usdcToDaiQuote.outputAmount} DAI`,
+        input: `${usdcToDaiAmount} ${USDC_TO_DAI_INPUT.symbol}`,
+        output: `${usdcToDaiQuote.outputAmount} ${USDC_TO_DAI_OUTPUT.symbol}`,
         priceImpact: usdcToDaiQuote.priceImpact,
       });
 
-      // Approve USDC
+      // Approve input token
       await checkAndApproveToken(
         walletClient,
         publicClient,
-        baseCampTestnetTokens.usdc.address as Address,
-        parseUnits(usdcToDaiAmount, 6),
+        USDC_TO_DAI_INPUT.address as Address,
+        parseUnits(usdcToDaiAmount, USDC_TO_DAI_INPUT.decimals),
         account.address
       );
 

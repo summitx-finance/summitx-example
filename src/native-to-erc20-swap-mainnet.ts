@@ -14,8 +14,9 @@ import { privateKeyToAccount } from "viem/accounts";
 import {
   campMainnet,
   campMainnetTokens,
-  SMART_ROUTER_ADDRESS,
 } from "./config/camp-mainnet";
+import { getContractsForChain } from "./config/chains";
+import { ChainId } from "@summitx/chains";
 import { TokenQuoter } from "./quoter/token-quoter-mainnet";
 import { logger } from "./utils/logger";
 
@@ -30,6 +31,8 @@ async function main() {
   logger.header("🔄 Native to ERC20 Swap Example");
   logger.info("Swapping CAMP (native) to USDC");
   logger.divider();
+
+  const contracts = getContractsForChain(ChainId.BASECAMP);
 
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");
@@ -49,15 +52,24 @@ async function main() {
     transport: http(campMainnet.rpcUrls.default.http[0]),
   });
 
+  // Define tokens to use throughout the file
+  const INPUT_TOKEN = campMainnetTokens.wcamp; // WCAMP for native swaps
+  const OUTPUT_TOKEN = campMainnetTokens.usdc;
+
   logger.info(`Wallet address: ${account.address}`);
 
   // Check native balance
   const nativeBalance = await publicClient.getBalance({
     address: account.address,
   });
-  logger.info(`Native CAMP balance: ${formatUnits(nativeBalance, 18)}`);
+  logger.info(
+    `Native CAMP balance: ${formatUnits(
+      nativeBalance,
+      campMainnet.nativeCurrency.decimals
+    )}`
+  );
 
-  if (nativeBalance < parseUnits("0.1", 18)) {
+  if (nativeBalance < parseUnits("0.1", campMainnet.nativeCurrency.decimals)) {
     logger.error("Insufficient CAMP balance. Need at least 0.1 CAMP");
     process.exit(1);
   }
@@ -79,25 +91,25 @@ async function main() {
     // Define swap amount
     const swapAmount = "0.01"; // 0.01 CAMP
 
-    logger.info(`Getting quote for ${swapAmount} CAMP → USDC...`);
+    logger.info(`Getting quote for ${swapAmount} CAMP → ${OUTPUT_TOKEN.symbol}...`);
 
     // Get quote
     const quote = await quoter.getQuote(
-      campMainnetTokens.wcamp, // Use WCAMP for native
-      campMainnetTokens.usdc,
+      INPUT_TOKEN, // Use WCAMP for native
+      OUTPUT_TOKEN,
       swapAmount,
       TradeType.EXACT_INPUT,
       false
     );
 
     if (!quote || !quote.rawTrade) {
-      logger.error("No route found for CAMP → USDC");
+      logger.error(`No route found for CAMP → ${OUTPUT_TOKEN.symbol}`);
       process.exit(1);
     }
 
     logger.success("Quote received:", {
       input: `${swapAmount} CAMP`,
-      output: `${quote.outputAmount} USDC`,
+      output: `${quote.outputAmount} ${OUTPUT_TOKEN.symbol}`,
       priceImpact: quote.priceImpact,
       route: quote.route,
     });
@@ -111,17 +123,23 @@ async function main() {
     });
 
     // For native token swap, set the value
-    const nativeValue = parseUnits(swapAmount, 18);
+    const nativeValue = parseUnits(
+      swapAmount,
+      campMainnet.nativeCurrency.decimals
+    );
 
     logger.info(
-      `Sending ${formatUnits(nativeValue, 18)} CAMP with transaction`
+      `Sending ${formatUnits(
+        nativeValue,
+        campMainnet.nativeCurrency.decimals
+      )} CAMP with transaction`
     );
 
     // Execute swap
     logger.info("Executing swap...");
 
     const swapHash = await walletClient.sendTransaction({
-      to: SMART_ROUTER_ADDRESS as Address,
+      to: contracts.SMART_ROUTER as Address,
       data: methodParameters.calldata,
       value: nativeValue, // Send native CAMP
     });
@@ -135,9 +153,9 @@ async function main() {
     if (receipt.status === "success") {
       logger.success(`✅ Swap successful! Gas used: ${receipt.gasUsed}`);
 
-      // Check USDC balance
-      const usdcBalance = await publicClient.readContract({
-        address: campMainnetTokens.usdc.address as Address,
+      // Check output token balance
+      const outputBalance = await publicClient.readContract({
+        address: OUTPUT_TOKEN.address as Address,
         abi: [
           {
             name: "balanceOf",
@@ -151,7 +169,10 @@ async function main() {
         args: [account.address],
       });
 
-      logger.success("New USDC balance:", formatUnits(usdcBalance, 6));
+      logger.success(
+        `New ${OUTPUT_TOKEN.symbol} balance:`,
+        formatUnits(outputBalance, OUTPUT_TOKEN.decimals)
+      );
     } else {
       logger.error("❌ Swap failed");
     }
