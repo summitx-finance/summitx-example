@@ -173,7 +173,7 @@ async function main() {
   logger.info("Add liquidity to V2 AMM pools on Camp Mainnet");
   logger.divider();
 
-  const chainId = ChainId.BASECAMP;
+  const chainId = ChainId.CAMP;
   const contracts = getContractsForChain(chainId);
 
   if (!process.env.PRIVATE_KEY) {

@@ -48,7 +48,7 @@ const WETH_ABI = [
 ] as const;
 
 async function main() {
-  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
+  const contracts = getContractsForChain(ChainId.BASECAMP);
 
   logger.header("Wrap/Unwrap Example - Base Camp Testnet");
 

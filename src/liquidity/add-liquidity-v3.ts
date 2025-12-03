@@ -160,7 +160,7 @@ async function main() {
   logger.info("Add concentrated liquidity to V3 pools on Base Camp Testnet");
   logger.divider();
 
-  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
+  const contracts = getContractsForChain(ChainId.BASECAMP);
 
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");

@@ -60,7 +60,7 @@ export class TokenQuoter {
   private v2SubgraphClient: GraphQLClient;
 
   constructor(options: TokenQuoterOptions = {}) {
-    this.chainId = options.chainId || ChainId.BASECAMP_TESTNET;
+    this.chainId = options.chainId || ChainId.BASECAMP;
 
     this.options = {
       rpcUrl: options.rpcUrl || "https://rpc-campnetwork.xyz",

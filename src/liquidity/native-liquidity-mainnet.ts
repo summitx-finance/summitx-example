@@ -84,7 +84,7 @@ async function getTokenInfo(
 
   return { address: tokenAddress, symbol, decimals, balance };
 }
-const chainId = ChainId.BASECAMP;
+const chainId = ChainId.CAMP;
 const contracts = getContractsForChain(chainId);
 
 async function getPairInfo(publicClient: any, tokenAddress: Address) {

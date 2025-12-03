@@ -10,7 +10,7 @@ import { logger } from "../utils/logger";
 async function testNativeSwap() {
   logger.header("🧪 Testing Native CAMP Swap");
 
-  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
+  const contracts = getContractsForChain(ChainId.BASECAMP);
 
   const quoter = new TokenQuoter({
     rpcUrl: "https://rpc-campnetwork.xyz",

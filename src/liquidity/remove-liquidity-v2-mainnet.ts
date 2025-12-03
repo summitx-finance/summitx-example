@@ -218,7 +218,7 @@ async function main() {
   logger.info("Remove liquidity from V2 AMM pools on Camp");
   logger.divider();
 
-  const contracts = getContractsForChain(ChainId.BASECAMP);
+  const contracts = getContractsForChain(ChainId.CAMP);
 
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");

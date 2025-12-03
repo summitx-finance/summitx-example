@@ -18,7 +18,7 @@ import { logger } from "../utils/logger";
 config();
 
 // Token configuration
-const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
+const contracts = getContractsForChain(ChainId.BASECAMP);
 const TOKENS = [
   {
     address: baseCampTestnetTokens.wcamp.address,

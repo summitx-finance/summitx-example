@@ -192,7 +192,7 @@ async function delay(ms: number) {
 async function main() {
   logger.header("🔄 Comprehensive Swap Examples - Base Camp Testnet");
 
-  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
+  const contracts = getContractsForChain(ChainId.BASECAMP);
 
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");

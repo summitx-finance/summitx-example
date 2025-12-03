@@ -14,7 +14,7 @@ config();
 async function debugGas() {
   logger.header("🔍 Debug Gas Estimation");
 
-  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
+  const contracts = getContractsForChain(ChainId.BASECAMP);
 
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");

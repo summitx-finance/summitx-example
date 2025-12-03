@@ -55,7 +55,7 @@ const ERC20_ABI = [
 async function main() {
   logger.header("🔄 Single Swap Example - Base Camp Testnet");
 
-  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
+  const contracts = getContractsForChain(ChainId.BASECAMP);
 
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");

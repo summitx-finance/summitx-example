@@ -69,13 +69,13 @@
     "mainnet:referral:check": "tsx src/referral/referral-system-mainnet.ts check"
   },
   "dependencies": {
-    "@summitx/chains": "0.1.1",
-    "@summitx/multicall": "3.2.3",
+    "@summitx/chains": "0.1.2",
+    "@summitx/multicall": "3.2.1",
     "@summitx/smart-router": "4.9.4",
-    "@summitx/swap-sdk-core": "1.0.4",
+    "@summitx/swap-sdk-core": "1.0.1",
     "@summitx/tokens": "0.5.3",
-    "@summitx/v3-sdk": "3.5.4",
-    "@summitx/sdk": "5.7.3",
+    "@summitx/v3-sdk": "3.5.1",
+    "@summitx/sdk": "5.7.6",
     "chalk": "^5.3.0",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",

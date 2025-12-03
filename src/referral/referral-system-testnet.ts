@@ -43,7 +43,7 @@ async function main() {
 
   const privateKey = process.env.PRIVATE_KEY as Hex;
   const account = privateKeyToAccount(privateKey);
-  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
+  const contracts = getContractsForChain(ChainId.BASECAMP);
 
   const publicClient = createPublicClient({
     chain: basecampTestnet,

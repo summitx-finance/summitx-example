@@ -36,7 +36,7 @@ async function main() {
   logger.info("Buying tokens with exact native CAMP amount");
   logger.divider();
 
-  const contracts = getContractsForChain(ChainId.BASECAMP);
+  const contracts = getContractsForChain(ChainId.CAMP);
 
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");

@@ -19,8 +19,8 @@ import { logger } from "../utils/logger";
 config();
 
 async function main() {
-  const chainId = ChainId.BASECAMP_TESTNET;
-  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
+  const chainId = ChainId.BASECAMP;
+  const contracts = getContractsForChain(ChainId.BASECAMP);
 
   logger.header("💰 Collect V3 Fees");
   logger.info("Collect accumulated fees from Uniswap V3 positions");

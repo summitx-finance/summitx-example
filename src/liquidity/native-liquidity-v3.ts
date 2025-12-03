@@ -26,7 +26,7 @@ import { logger } from "../utils/logger";
 
 config();
 
-const chainId = ChainId.BASECAMP_TESTNET;
+const chainId = ChainId.BASECAMP;
 const contracts = getContractsForChain(chainId);
 
 // Fee tier options for V3

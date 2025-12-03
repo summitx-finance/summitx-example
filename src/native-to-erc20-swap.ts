@@ -32,7 +32,7 @@ async function main() {
   logger.info("Swapping CAMP (native) to USDC");
   logger.divider();
 
-  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
+  const contracts = getContractsForChain(ChainId.BASECAMP);
 
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");

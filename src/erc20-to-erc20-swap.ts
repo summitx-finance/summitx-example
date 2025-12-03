@@ -46,7 +46,7 @@ async function executeSwap(
   account: any,
   quoter: TokenQuoter
 ) {
-  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
+  const contracts = getContractsForChain(ChainId.BASECAMP);
   logger.divider();
   logger.info(
     `Swapping ${amount} ${inputToken.symbol} → ${outputToken.symbol}`
@@ -154,7 +154,7 @@ async function main() {
   logger.info("Multiple token pair swaps");
   logger.divider();
 
-  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
+  const contracts = getContractsForChain(ChainId.BASECAMP);
 
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");

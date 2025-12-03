@@ -15,7 +15,7 @@ import type { Address, PublicClient } from "viem";
 import { createPublicClient, http } from "viem";
 
 // Base testnet configuration
-export const BASECAMP_TESTNET = ChainId.BASECAMP_TESTNET;
+export const BASECAMP_TESTNET = ChainId.BASECAMP;
 
 export const basecampTestnet = {
   id: 123420001114,
@@ -57,20 +57,20 @@ export const RPC_ENDPOINTS = ["https://rpc-campnetwork.xyz"];
 
 // Smart router addresses
 export const SMART_ROUTER_ADDRESS =
-  SMART_ROUTER_ADDRESSES_SDK[ChainId.BASECAMP_TESTNET];
+  SMART_ROUTER_ADDRESSES_SDK[ChainId.BASECAMP];
 export const V2_ROUTER_ADDRESS =
-  V2_ROUTER_ADDRESS_SDK[ChainId.BASECAMP_TESTNET];
+  V2_ROUTER_ADDRESS_SDK[ChainId.BASECAMP];
 export const V2_FACTORY_ADDRESS =
-  FACTORY_ADDRESS_MAP_SDK[ChainId.BASECAMP_TESTNET];
+  FACTORY_ADDRESS_MAP_SDK[ChainId.BASECAMP];
 export const V3_QUOTER_ADDRESS =
-  V3_QUOTER_ADDRESSES_SDK[ChainId.BASECAMP_TESTNET];
+  V3_QUOTER_ADDRESSES_SDK[ChainId.BASECAMP];
 export const MIXED_ROUTE_QUOTER_ADDRESS =
-  MIXED_ROUTE_QUOTER_ADDRESSES_SDK[ChainId.BASECAMP_TESTNET];
+  MIXED_ROUTE_QUOTER_ADDRESSES_SDK[ChainId.BASECAMP];
 
 // Common tokens on Base testnet
-export const WCAMP_ADDRESS = WNATIVE[ChainId.BASECAMP_TESTNET]
+export const WCAMP_ADDRESS = WNATIVE[ChainId.BASECAMP]
   .address as Address;
-export const USDC_ADDRESS = USDC[ChainId.BASECAMP_TESTNET].address as Address;
+export const USDC_ADDRESS = USDC[ChainId.BASECAMP].address as Address;
 export const USDT_ADDRESS = "0xA745f7A59E70205e6040BdD3b33eD21DBD23FEB3";
 export const DAI_ADDRESS = "0x5d3011cCc6d3431D671c9e69EEddA9C5C654B97F";
 export const WBTC_ADDRESS = "0x587aF234D373C752a6F6E9eD6c4Ce871e7528BCF";

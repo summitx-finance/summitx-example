@@ -19,7 +19,7 @@ import { logger } from "../utils/logger";
 config();
 
 async function main() {
-  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
+  const contracts = getContractsForChain(ChainId.BASECAMP);
 
   logger.header("💧 Remove V3 Liquidity");
   logger.info("Remove liquidity from Uniswap V3 concentrated positions");
@@ -50,7 +50,7 @@ async function main() {
     const positions = await LiquidityHelpers.getUserV3Positions(
       publicClient,
       account.address,
-      ChainId.BASECAMP_TESTNET
+      ChainId.BASECAMP
     );
 
     if (positions.length === 0) {
@@ -102,7 +102,7 @@ async function main() {
         pos.token0,
         pos.token1,
         pos.fee,
-        ChainId.BASECAMP_TESTNET
+        ChainId.BASECAMP
       );
 
       if (poolInfo) {

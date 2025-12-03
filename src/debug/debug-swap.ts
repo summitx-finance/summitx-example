@@ -12,7 +12,7 @@ config();
 async function debugSwap() {
   logger.header("🔍 Debug Swap Parameters");
 
-  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
+  const contracts = getContractsForChain(ChainId.BASECAMP);
 
   const quoter = new TokenQuoter({
     rpcUrl: "https://rpc-campnetwork.xyz",

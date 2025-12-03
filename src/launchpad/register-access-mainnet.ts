@@ -29,7 +29,7 @@ async function main() {
   logger.info("Registering with invite code to gain access to launchpad");
   logger.divider();
 
-  const contracts = getContractsForChain(ChainId.BASECAMP);
+  const contracts = getContractsForChain(ChainId.CAMP);
 
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");
@@ -90,7 +90,7 @@ async function main() {
 
     // Get merkle proof from API
     logger.info("Fetching merkle proof from API...");
-    const proof = await generateProof(accessCode, ChainId.BASECAMP);
+    const proof = await generateProof(accessCode, ChainId.CAMP);
 
     if (proof.length === 0) {
       logger.error("Invalid Code: Proof is empty");

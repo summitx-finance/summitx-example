@@ -19,7 +19,7 @@ import { logger } from "../utils/logger";
 config();
 
 async function main() {
-  const chainId = ChainId.BASECAMP;
+  const chainId = ChainId.CAMP;
   const contracts = getContractsForChain(chainId);
 
   logger.header("💰 Collect V3 Fees");

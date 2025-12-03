@@ -4,8 +4,8 @@ import type { QuoteResult } from "../quoter/token-quoter";
 
 // Types matching swap-quote-engine format
 export enum ChainId {
-  BASECAMP_TESTNET = 123420001114,
-  BASECAMP = 123420001115,
+  BASECAMP = 123420001114,
+  CAMP = 123420001115,
 }
 
 export enum TradeType {
@@ -280,7 +280,7 @@ export class QuoteToTradeConverter {
           // Intermediate token - create from hop info
           // In a real implementation, you'd look up the actual token details
           outputToken = {
-            chainId: ChainId.BASECAMP_TESTNET,
+            chainId: ChainId.BASECAMP,
             address: `0x${hop.tokenOut.toLowerCase()}`, // Placeholder
             decimals: 18, // Default, should be looked up
             symbol: hop.tokenOut,

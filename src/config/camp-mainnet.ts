@@ -15,7 +15,7 @@ import type { Address, PublicClient } from "viem";
 import { createPublicClient, http } from "viem";
 
 // Camp mainnet configuration
-export const CAMP_MAINNET = ChainId.BASECAMP;
+export const CAMP_MAINNET = ChainId.CAMP;
 
 export const campMainnet = {
   id: CAMP_MAINNET,
@@ -57,16 +57,16 @@ export const RPC_ENDPOINTS = ["https://rpc.camp.raas.gelato.cloud"];
 
 // Smart router addresses - THESE NEED TO BE UPDATED WITH ACTUAL MAINNET ADDRESSES
 export const SMART_ROUTER_ADDRESS =
-  SMART_ROUTER_ADDRESSES_SDK[ChainId.BASECAMP];
-export const V2_ROUTER_ADDRESS = V2_ROUTER_ADDRESS_SDK[ChainId.BASECAMP];
-export const V2_FACTORY_ADDRESS = FACTORY_ADDRESS_MAP_SDK[ChainId.BASECAMP];
-export const V3_QUOTER_ADDRESS = V3_QUOTER_ADDRESSES_SDK[ChainId.BASECAMP];
+  SMART_ROUTER_ADDRESSES_SDK[ChainId.CAMP];
+export const V2_ROUTER_ADDRESS = V2_ROUTER_ADDRESS_SDK[ChainId.CAMP];
+export const V2_FACTORY_ADDRESS = FACTORY_ADDRESS_MAP_SDK[ChainId.CAMP];
+export const V3_QUOTER_ADDRESS = V3_QUOTER_ADDRESSES_SDK[ChainId.CAMP];
 export const MIXED_ROUTE_QUOTER_ADDRESS =
-  MIXED_ROUTE_QUOTER_ADDRESSES_SDK[ChainId.BASECAMP];
+  MIXED_ROUTE_QUOTER_ADDRESSES_SDK[ChainId.CAMP];
 
 // Common tokens on Camp mainnet - THESE NEED TO BE UPDATED WITH ACTUAL MAINNET ADDRESSES
-export const WCAMP_ADDRESS = WNATIVE[ChainId.BASECAMP].address as Address;
-export const USDC_ADDRESS = USDC[ChainId.BASECAMP].address as Address;
+export const WCAMP_ADDRESS = WNATIVE[ChainId.CAMP].address as Address;
+export const USDC_ADDRESS = USDC[ChainId.CAMP].address as Address;
 
 // Token instances
 export const campMainnetTokens = {

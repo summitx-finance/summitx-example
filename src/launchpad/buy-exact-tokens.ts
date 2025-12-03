@@ -49,7 +49,7 @@ async function main() {
   logger.info("Buying tokens with exact ERC20 token amount (e.g., USDC)");
   logger.divider();
 
-  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
+  const contracts = getContractsForChain(ChainId.BASECAMP);
 
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");

@@ -164,7 +164,7 @@ async function main() {
   logger.info("Add concentrated liquidity to V3 pools on Camp");
   logger.divider();
 
-  const chainId = ChainId.BASECAMP;
+  const chainId = ChainId.CAMP;
   const contracts = getContractsForChain(chainId);
 
   if (!process.env.PRIVATE_KEY) {

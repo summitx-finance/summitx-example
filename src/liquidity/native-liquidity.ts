@@ -85,7 +85,7 @@ async function getTokenInfo(
   return { address: tokenAddress, symbol, decimals, balance };
 }
 
-const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
+const contracts = getContractsForChain(ChainId.BASECAMP);
 
 async function getPairInfo(publicClient: any, tokenAddress: Address) {
   // Native CAMP pairs use WCAMP internally
@@ -144,7 +144,7 @@ async function main() {
   logger.info("Add and remove liquidity using native CAMP directly");
   logger.divider();
 
-  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
+  const contracts = getContractsForChain(ChainId.BASECAMP);
 
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");

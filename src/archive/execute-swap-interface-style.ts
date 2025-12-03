@@ -67,7 +67,7 @@ const ERC20_ABI = [
 ] as const;
 
 async function main() {
-  const contracts = getContractsForChain(ChainId.BASECAMP_TESTNET);
+  const contracts = getContractsForChain(ChainId.BASECAMP);
 
   logger.header("SummitX Swap Execution - Interface Style");
 
