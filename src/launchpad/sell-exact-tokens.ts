@@ -1,8 +1,8 @@
 /**
  * Launchpad Trade Example: sellExactEth (Testnet)
- * Sell exact ERC20 token amount for native CAMP
+ * Sell exact ERC20 token amount for native ETH
  *
- * This example demonstrates selling ERC20 tokens for native CAMP on the launchpad
+ * This example demonstrates selling ERC20 tokens for native ETH on the launchpad
  * using the ReferralRouter contract's sellExactEth function.
  */
 
@@ -20,9 +20,9 @@ import {
 import { privateKeyToAccount } from "viem/accounts";
 import { REFERRAL_ROUTER_ABI } from "../config/abis";
 import {
-  basecampTestnet,
-  basecampTestnetLaunchpadToken,
-} from "../config/base-testnet";
+  megaethTestnet,
+  megaethTestnetLaunchpadToken,
+} from "../config/megaeth-testnet";
 import { getContractsForChain } from "../config/chains";
 import {
   getArgs,
@@ -50,10 +50,10 @@ const ERC20_ABI = [
 
 async function main() {
   logger.header("🚀 Launchpad Trade: sellExactTokens (Testnet)");
-  logger.info("Selling exact ERC20 token amount for native CAMP");
+  logger.info("Selling exact ERC20 token amount for native ETH");
   logger.divider();
 
-  const contracts = getContractsForChain(ChainId.BASECAMP);
+  const contracts = getContractsForChain(ChainId.MEGAETH_TESTNET);
 
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");
@@ -63,21 +63,21 @@ async function main() {
   const account = privateKeyToAccount(process.env.PRIVATE_KEY as Hex);
 
   const publicClient = createPublicClient({
-    chain: basecampTestnet,
-    transport: http(basecampTestnet.rpcUrls.default.http[0]),
+    chain: megaethTestnet,
+    transport: http(megaethTestnet.rpcUrls.default.http[0]),
   });
 
   const walletClient = createWalletClient({
     account,
-    chain: basecampTestnet,
-    transport: http(basecampTestnet.rpcUrls.default.http[0]),
+    chain: megaethTestnet,
+    transport: http(megaethTestnet.rpcUrls.default.http[0]),
   });
 
   logger.info(`Wallet address: ${account.address}`);
 
-  // Tokens to use - selling tokens for native CAMP
-  const INPUT_TOKEN = basecampTestnetLaunchpadToken.DERP; // Token to sell (e.g., DERP)
-  const NATIVE_TOKEN_SYMBOL = "CAMP"; // Token to receive (native CAMP)
+  // Tokens to use - selling tokens for native ETH
+  const INPUT_TOKEN = megaethTestnetLaunchpadToken.MEOW; // Token to sell (e.g., DERP)
+  const NATIVE_TOKEN_SYMBOL = "ETH"; // Token to receive (native ETH)
 
   // Define sell amount (ERC20 tokens to sell)
   const sellAmount = "100"; // 100 DERP
@@ -118,7 +118,7 @@ async function main() {
       INPUT_TOKEN.address as Address, // Launchpad token address (token being sold)
       sellAmount,
       "sell",
-      INPUT_TOKEN.symbol, // Receiving native CAMP
+      INPUT_TOKEN.symbol, // Receiving native ETH
       NATIVE_TOKEN_SYMBOL
     );
 
@@ -146,7 +146,7 @@ async function main() {
 
     // Get function name and arguments
     const actionType = "sell";
-    const selectedSymbol = INPUT_TOKEN.symbol; // Receiving native CAMP
+    const selectedSymbol = INPUT_TOKEN.symbol; // Receiving native ETH
     const referralCode =
       "0x0000000000000000000000000000000000000000000000000000000000000000"; // Empty referral code
 

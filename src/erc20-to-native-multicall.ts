@@ -13,9 +13,9 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import {
-  basecampTestnet,
-  baseCampTestnetTokens,
-} from "./config/base-testnet";
+  megaethTestnet,
+  megaEthTestnetTokens,
+} from "./config/megaeth-testnet";
 import { getContractsForChain } from "./config/chains";
 import { ChainId } from "@summitx/chains";
 import { TokenQuoter } from "./quoter/token-quoter";
@@ -92,10 +92,10 @@ const ROUTER_MULTICALL_ABI = [
 
 async function main() {
   logger.header("🔄 ERC20 to Native Swap with Multicall");
-  logger.info("Swapping USDC to CAMP (native) in a single transaction");
+  logger.info("Swapping USDC to ETH (native) in a single transaction");
   logger.divider();
 
-  const contracts = getContractsForChain(ChainId.BASECAMP);
+  const contracts = getContractsForChain(ChainId.MEGAETH_TESTNET);
 
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");
@@ -105,21 +105,21 @@ async function main() {
   const account = privateKeyToAccount(process.env.PRIVATE_KEY as Hex);
 
   const publicClient = createPublicClient({
-    chain: basecampTestnet,
-    transport: http(basecampTestnet.rpcUrls.default.http[0]),
+    chain: megaethTestnet,
+    transport: http(megaethTestnet.rpcUrls.default.http[0]),
   });
 
   const walletClient = createWalletClient({
     account,
-    chain: basecampTestnet,
-    transport: http(basecampTestnet.rpcUrls.default.http[0]),
+    chain: megaethTestnet,
+    transport: http(megaethTestnet.rpcUrls.default.http[0]),
   });
 
   logger.info(`Wallet address: ${account.address}`);
 
   // Define tokens to use throughout the file
-  const INPUT_TOKEN = baseCampTestnetTokens.usdc;
-  const OUTPUT_TOKEN = baseCampTestnetTokens.wcamp; // WCAMP for native swaps
+  const INPUT_TOKEN = megaEthTestnetTokens.usdc;
+  const OUTPUT_TOKEN = megaEthTestnetTokens.weth; // WETH for native swaps
 
   // Check input token balance
   const inputBalance = await publicClient.readContract({
@@ -143,7 +143,7 @@ async function main() {
 
   // Initialize quoter
   const quoter = new TokenQuoter({
-    rpcUrl: basecampTestnet.rpcUrls.default.http[0],
+    rpcUrl: megaethTestnet.rpcUrls.default.http[0],
     slippageTolerance: 1.0,
     maxHops: 2,
     maxSplits: 3,
@@ -158,9 +158,9 @@ async function main() {
     // Define swap amount
     const swapAmount = "0.5"; // 0.5 of input token
 
-    logger.info(`Getting quote for ${swapAmount} USDC → CAMP...`);
+    logger.info(`Getting quote for ${swapAmount} USDC → ETH...`);
 
-    // Get quote - swap to WCAMP first
+    // Get quote - swap to WETH first
     const quote = await quoter.getQuote(
       INPUT_TOKEN,
       OUTPUT_TOKEN,
@@ -170,13 +170,13 @@ async function main() {
     );
 
     if (!quote || !quote.rawTrade) {
-      logger.error(`No route found for ${INPUT_TOKEN.symbol} → WCAMP`);
+      logger.error(`No route found for ${INPUT_TOKEN.symbol} → WETH`);
       process.exit(1);
     }
 
     logger.success("Quote received:", {
       input: `${swapAmount} ${INPUT_TOKEN.symbol}`,
-      output: `${quote.outputAmount} WCAMP`,
+      output: `${quote.outputAmount} WETH`,
       priceImpact: quote.priceImpact,
       route: quote.route,
     });
@@ -185,7 +185,7 @@ async function main() {
     const [initialNativeBalance, wcampBalanceBefore] = await Promise.all([
       publicClient.getBalance({ address: account.address }),
       publicClient.readContract({
-        address: contracts.WCAMP as Address,
+        address: contracts.WETH as Address,
         abi: ERC20_ABI,
         functionName: "balanceOf",
         args: [account.address],
@@ -193,13 +193,13 @@ async function main() {
     ]);
 
     logger.info(
-      `Initial CAMP balance: ${formatUnits(
+      `Initial ETH balance: ${formatUnits(
         initialNativeBalance,
-        basecampTestnet.nativeCurrency.decimals
+        megaethTestnet.nativeCurrency.decimals
       )}`
     );
     logger.info(
-      `Initial WCAMP balance: ${formatUnits(
+      `Initial WETH balance: ${formatUnits(
         wcampBalanceBefore,
         OUTPUT_TOKEN.decimals
       )}`
@@ -221,7 +221,7 @@ async function main() {
     const swapParams = SwapRouter.swapCallParameters(trade, {
       slippageTolerance: new Percent(100, 10000), // 1%
       deadline: Math.floor(Date.now() / 1000) + 60 * 20,
-      recipient: contracts.SMART_ROUTER as Address, // Send WCAMP to router for unwrapping
+      recipient: contracts.SMART_ROUTER as Address, // Send WETH to router for unwrapping
     });
 
     // Calculate minimum amount out with slippage
@@ -231,9 +231,9 @@ async function main() {
 
     // Create multicall data
     const multicallData = [
-      // First: Execute the swap (USDC -> WCAMP to router)
+      // First: Execute the swap (USDC -> WETH to router)
       swapParams.calldata,
-      // Second: Unwrap WCAMP to native CAMP and send to user
+      // Second: Unwrap WETH to native ETH and send to user
       encodeFunctionData({
         abi: ROUTER_MULTICALL_ABI,
         functionName: "unwrapWETH9",
@@ -264,7 +264,7 @@ async function main() {
       await Promise.all([
         publicClient.getBalance({ address: account.address }),
         publicClient.readContract({
-          address: contracts.WCAMP as Address,
+          address: contracts.WETH as Address,
           abi: ERC20_ABI,
           functionName: "balanceOf",
           args: [account.address],
@@ -288,28 +288,28 @@ async function main() {
         finalUsdcBalance,
         INPUT_TOKEN.decimals
       )}`,
-      WCAMP: `${formatUnits(
+      WETH: `${formatUnits(
         wcampBalanceBefore,
         OUTPUT_TOKEN.decimals
       )} → ${formatUnits(
         wcampBalanceAfter,
         OUTPUT_TOKEN.decimals
       )}`,
-      "Native CAMP": `${formatUnits(
+      "Native ETH": `${formatUnits(
         initialNativeBalance,
-        basecampTestnet.nativeCurrency.decimals
+        megaethTestnet.nativeCurrency.decimals
       )} → ${formatUnits(
         finalNativeBalance,
-        basecampTestnet.nativeCurrency.decimals
+        megaethTestnet.nativeCurrency.decimals
       )}`,
-      "CAMP received (net)": formatUnits(
+      "ETH received (net)": formatUnits(
         nativeReceived,
-        basecampTestnet.nativeCurrency.decimals
+        megaethTestnet.nativeCurrency.decimals
       ),
     });
 
     logger.success(
-      "✅ Successfully swapped USDC to native CAMP in a single transaction!"
+      "✅ Successfully swapped USDC to native ETH in a single transaction!"
     );
   } catch (error: any) {
     if (error?.message?.includes("429")) {

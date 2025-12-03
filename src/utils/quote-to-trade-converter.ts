@@ -6,6 +6,7 @@ import type { QuoteResult } from "../quoter/token-quoter";
 export enum ChainId {
   BASECAMP = 123420001114,
   CAMP = 123420001115,
+  MEGAETH_TESTNET=6343
 }
 
 export enum TradeType {

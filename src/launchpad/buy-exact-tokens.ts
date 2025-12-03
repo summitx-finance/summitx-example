@@ -20,9 +20,9 @@ import {
 import { privateKeyToAccount } from "viem/accounts";
 import { REFERRAL_ROUTER_ABI } from "../config/abis";
 import {
-  basecampTestnet,
-  basecampTestnetLaunchpadToken,
-} from "../config/base-testnet";
+  megaethTestnet,
+  megaethTestnetLaunchpadToken,
+} from "../config/megaeth-testnet";
 import { getContractsForChain } from "../config/chains";
 import {
   getArgs,
@@ -49,7 +49,7 @@ async function main() {
   logger.info("Buying tokens with exact ERC20 token amount (e.g., USDC)");
   logger.divider();
 
-  const contracts = getContractsForChain(ChainId.BASECAMP);
+  const contracts = getContractsForChain(ChainId.MEGAETH_TESTNET);
 
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");
@@ -59,22 +59,22 @@ async function main() {
   const account = privateKeyToAccount(process.env.PRIVATE_KEY as Hex);
 
   const publicClient = createPublicClient({
-    chain: basecampTestnet,
-    transport: http(basecampTestnet.rpcUrls.default.http[0]),
+    chain: megaethTestnet,
+    transport: http(megaethTestnet.rpcUrls.default.http[0]),
   });
 
   const walletClient = createWalletClient({
     account,
-    chain: basecampTestnet,
-    transport: http(basecampTestnet.rpcUrls.default.http[0]),
+    chain: megaethTestnet,
+    transport: http(megaethTestnet.rpcUrls.default.http[0]),
   });
 
   logger.info(`Wallet address: ${account.address}`);
 
   // Tokens to use
-  const INPUT_TOKEN = "CAMP"; // Token to spend (e.g., USDC)
-  const TOKEN_TO_BUY = basecampTestnetLaunchpadToken.DERP; // Token to buy (example: WCAMP, replace with actual launchpad token)
-  const NATIVE_TOKEN_SYMBOL = "CAMP";
+  const INPUT_TOKEN = "ETH"; // Token to spend (e.g., USDC)
+  const TOKEN_TO_BUY = megaethTestnetLaunchpadToken.MEOW; // Token to buy (example: WCAMP, replace with actual launchpad token)
+  const NATIVE_TOKEN_SYMBOL = "ETH";
   const buyAmount = "100"; // 100 DERP
 
   // Check input token balance
@@ -85,13 +85,13 @@ async function main() {
   logger.info(
     `${INPUT_TOKEN} Balance: ${formatUnits(
       inputBalance,
-      basecampTestnet.nativeCurrency.decimals
+      megaethTestnet.nativeCurrency.decimals
     )}`
   );
 
   if (
     inputBalance <
-    parseUnits(buyAmount, basecampTestnet.nativeCurrency.decimals)
+    parseUnits(buyAmount, megaethTestnet.nativeCurrency.decimals)
   ) {
     logger.error(
       `Insufficient ${INPUT_TOKEN} balance. Need at least 0.5 ${INPUT_TOKEN}`

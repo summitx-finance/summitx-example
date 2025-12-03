@@ -1,7 +1,7 @@
 import { SwapRouter } from "@summitx/smart-router/evm";
 import { Percent, TradeType } from "@summitx/swap-sdk-core";
 import { config } from "dotenv";
-import { baseCampTestnetTokens } from "../config/base-testnet";
+import {megaEthTestnetTokens } from "../config/megaeth-testnet";
 import { getContractsForChain } from "../config/chains";
 import { ChainId } from "@summitx/chains";
 import { TokenQuoter } from "../quoter/token-quoter";
@@ -12,10 +12,10 @@ config();
 async function debugSwap() {
   logger.header("🔍 Debug Swap Parameters");
 
-  const contracts = getContractsForChain(ChainId.BASECAMP);
+  const contracts = getContractsForChain(ChainId.MEGAETH_TESTNET);
 
   const quoter = new TokenQuoter({
-    rpcUrl: "https://rpc-campnetwork.xyz",
+    rpcUrl: "https://timothy.megaeth.com/mafia/rpc/n0m3q6w9e2r5t8y1u4i7o0p3a6s9d2f5g8h1j4k7",
     slippageTolerance: 1.0,
     maxHops: 2,
     maxSplits: 2,
@@ -25,8 +25,8 @@ async function debugSwap() {
 
   // Get a quote
   const quote = await quoter.getQuote(
-    baseCampTestnetTokens.usdc,
-    baseCampTestnetTokens.usdt,
+    megaEthTestnetTokens.usdc,
+    megaEthTestnetTokens.usdt,
     "0.1",
     TradeType.EXACT_INPUT,
     false

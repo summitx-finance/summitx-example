@@ -15,7 +15,7 @@ import {
 import { GraphQLClient } from "graphql-request";
 import type { PublicClient } from "viem";
 import { createPublicClient, formatUnits, http, parseUnits } from "viem";
-import { basecampTestnet } from "../config/base-testnet";
+import { megaethTestnet } from "../config/megaeth-testnet";
 import { logger } from "../utils/logger";
 
 export interface TokenQuoterOptions {
@@ -63,7 +63,7 @@ export class TokenQuoter {
     this.chainId = options.chainId || ChainId.BASECAMP;
 
     this.options = {
-      rpcUrl: options.rpcUrl || "https://rpc-campnetwork.xyz",
+      rpcUrl: options.rpcUrl || "https://timothy.megaeth.com/mafia/rpc/n0m3q6w9e2r5t8y1u4i7o0p3a6s9d2f5g8h1j4k7",
       maxHops: options.maxHops ?? 3,
       maxSplits: options.maxSplits ?? 3,
       distributionPercent: options.distributionPercent ?? 10,
@@ -73,7 +73,7 @@ export class TokenQuoter {
     };
 
     this.client = createPublicClient({
-      chain: basecampTestnet,
+      chain: megaethTestnet,
       transport: http(this.options.rpcUrl),
       batch: {
         multicall: true,

@@ -11,7 +11,7 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { NFT_POSITION_MANAGER_ABI } from "../config/abis";
-import { basecampTestnet } from "../config/base-testnet";
+import { megaethTestnet } from "../config/megaeth-testnet";
 import { getContractsForChain, getDeadline } from "../config/chains";
 import { LiquidityHelpers } from "../utils/liquidity-helpers";
 import { logger } from "../utils/logger";
@@ -19,7 +19,7 @@ import { logger } from "../utils/logger";
 config();
 
 async function main() {
-  const contracts = getContractsForChain(ChainId.BASECAMP);
+  const contracts = getContractsForChain(ChainId.MEGAETH_TESTNET);
 
   logger.header("💧 Remove V3 Liquidity");
   logger.info("Remove liquidity from Uniswap V3 concentrated positions");
@@ -33,14 +33,14 @@ async function main() {
   const account = privateKeyToAccount(process.env.PRIVATE_KEY as Hex);
 
   const publicClient = createPublicClient({
-    chain: basecampTestnet,
-    transport: http(basecampTestnet.rpcUrls.default.http[0]),
+    chain: megaethTestnet,
+    transport: http(megaethTestnet.rpcUrls.default.http[0]),
   });
 
   const walletClient = createWalletClient({
     account,
-    chain: basecampTestnet,
-    transport: http(basecampTestnet.rpcUrls.default.http[0]),
+    chain: megaethTestnet,
+    transport: http(megaethTestnet.rpcUrls.default.http[0]),
   });
 
   logger.info(`Wallet address: ${account.address}`);

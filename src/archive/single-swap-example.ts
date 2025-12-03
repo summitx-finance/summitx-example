@@ -12,9 +12,9 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import {
-  basecampTestnet,
-  baseCampTestnetTokens,
-} from "../config/base-testnet";
+  megaethTestnet,
+  megaEthTestnetTokens,
+} from "../config/megaeth-testnet";
 import { getContractsForChain } from "../config/chains";
 import { ChainId } from "@summitx/chains";
 import { TokenQuoter } from "../quoter/token-quoter";
@@ -55,7 +55,7 @@ const ERC20_ABI = [
 async function main() {
   logger.header("🔄 Single Swap Example - Base Camp Testnet");
 
-  const contracts = getContractsForChain(ChainId.BASECAMP);
+  const contracts = getContractsForChain(ChainId.MEGAETH_TESTNET);
 
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");
@@ -65,17 +65,17 @@ async function main() {
   const account = privateKeyToAccount(process.env.PRIVATE_KEY as Hex);
 
   const publicClient = createPublicClient({
-    chain: basecampTestnet,
+    chain: megaethTestnet,
     transport: http(
-      process.env.BASE_TESTNET_RPC_URL || "https://rpc-campnetwork.xyz"
+      process.env.MEGAETH_TESTNET_RPC_URL || "https://timothy.megaeth.com/mafia/rpc/n0m3q6w9e2r5t8y1u4i7o0p3a6s9d2f5g8h1j4k7"
     ),
   });
 
   const walletClient = createWalletClient({
     account,
-    chain: basecampTestnet,
+    chain: megaethTestnet,
     transport: http(
-      process.env.BASE_TESTNET_RPC_URL || "https://rpc-campnetwork.xyz"
+      process.env.MEGAETH_TESTNET_RPC_URL || "https://timothy.megaeth.com/mafia/rpc/n0m3q6w9e2r5t8y1u4i7o0p3a6s9d2f5g8h1j4k7"
     ),
   });
 
@@ -84,7 +84,7 @@ async function main() {
   try {
     // Check USDC balance
     const usdcBalance = await publicClient.readContract({
-      address: baseCampTestnetTokens.usdc.address as Address,
+      address: megaEthTestnetTokens.usdc.address as Address,
       abi: ERC20_ABI,
       functionName: "balanceOf",
       args: [account.address],
@@ -99,7 +99,7 @@ async function main() {
 
     // Initialize quoter with conservative settings
     const quoter = new TokenQuoter({
-      rpcUrl: process.env.BASE_TESTNET_RPC_URL || "https://rpc-campnetwork.xyz",
+      rpcUrl: process.env.MEGAETH_TESTNET_RPC_URL || "https://timothy.megaeth.com/mafia/rpc/n0m3q6w9e2r5t8y1u4i7o0p3a6s9d2f5g8h1j4k7",
       slippageTolerance: 1.0, // 1% slippage
       maxHops: 2,
       maxSplits: 2,
@@ -116,8 +116,8 @@ async function main() {
     logger.info(`Getting quote for ${swapAmount} USDC → USDT...`);
 
     const quote = await quoter.getQuote(
-      baseCampTestnetTokens.usdc,
-      baseCampTestnetTokens.usdt,
+      megaEthTestnetTokens.usdc,
+      megaEthTestnetTokens.usdt,
       swapAmount, // Pass decimal string, not raw amount
       TradeType.EXACT_INPUT,
       false // Don't adjust for gas like execute-swap-interface-style
@@ -137,7 +137,7 @@ async function main() {
 
     // Check and approve USDC
     const allowance = await publicClient.readContract({
-      address: baseCampTestnetTokens.usdc.address as Address,
+      address: megaEthTestnetTokens.usdc.address as Address,
       abi: ERC20_ABI,
       functionName: "allowance",
       args: [account.address, contracts.SMART_ROUTER],
@@ -146,7 +146,7 @@ async function main() {
     if (allowance < swapAmountBigInt) {
       logger.info(`Approving USDC...`);
       const approveHash = await walletClient.writeContract({
-        address: baseCampTestnetTokens.usdc.address as Address,
+        address: megaEthTestnetTokens.usdc.address as Address,
         abi: ERC20_ABI,
         functionName: "approve",
         args: [contracts.SMART_ROUTER, swapAmountBigInt],
@@ -200,13 +200,13 @@ async function main() {
       // Check final balances
       const [finalUsdcBalance, finalUsdtBalance] = await Promise.all([
         publicClient.readContract({
-          address: baseCampTestnetTokens.usdc.address as Address,
+          address: megaEthTestnetTokens.usdc.address as Address,
           abi: ERC20_ABI,
           functionName: "balanceOf",
           args: [account.address],
         }),
         publicClient.readContract({
-          address: baseCampTestnetTokens.usdt.address as Address,
+          address: megaEthTestnetTokens.usdt.address as Address,
           abi: ERC20_ABI,
           functionName: "balanceOf",
           args: [account.address],

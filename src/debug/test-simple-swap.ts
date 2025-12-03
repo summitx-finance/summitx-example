@@ -13,9 +13,9 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import {
-  basecampTestnet,
-  baseCampTestnetTokens,
-} from "../config/base-testnet";
+  megaethTestnet,
+  megaEthTestnetTokens,
+} from "../config/megaeth-testnet";
 import { getContractsForChain } from "../config/chains";
 import { ChainId } from "@summitx/chains";
 import { TokenQuoter } from "../quoter/token-quoter";
@@ -26,7 +26,7 @@ config();
 async function testSimpleSwap() {
   logger.header("🧪 Test Simple Native Swap");
 
-  const contracts = getContractsForChain(ChainId.BASECAMP);
+  const contracts = getContractsForChain(ChainId.MEGAETH_TESTNET);
 
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");
@@ -36,14 +36,14 @@ async function testSimpleSwap() {
   const account = privateKeyToAccount(process.env.PRIVATE_KEY as Hex);
   
   const publicClient = createPublicClient({
-    chain: basecampTestnet,
-    transport: http("https://rpc-campnetwork.xyz"),
+    chain: megaethTestnet,
+    transport: http("https://timothy.megaeth.com/mafia/rpc/n0m3q6w9e2r5t8y1u4i7o0p3a6s9d2f5g8h1j4k7"),
   });
 
   const walletClient = createWalletClient({
     account,
-    chain: basecampTestnet,
-    transport: http("https://rpc-campnetwork.xyz"),
+    chain: megaethTestnet,
+    transport: http("https://timothy.megaeth.com/mafia/rpc/n0m3q6w9e2r5t8y1u4i7o0p3a6s9d2f5g8h1j4k7"),
   });
 
   // Check balance
@@ -52,7 +52,7 @@ async function testSimpleSwap() {
 
   // Get quote for small amount
   const quoter = new TokenQuoter({
-    rpcUrl: "https://rpc-campnetwork.xyz",
+    rpcUrl: "https://timothy.megaeth.com/mafia/rpc/n0m3q6w9e2r5t8y1u4i7o0p3a6s9d2f5g8h1j4k7",
     slippageTolerance: 1.0,
     maxHops: 2,
     maxSplits: 2,
@@ -64,8 +64,8 @@ async function testSimpleSwap() {
   logger.info(`Getting quote for ${swapAmount} CAMP → USDC`);
 
   const quote = await quoter.getQuote(
-    baseCampTestnetTokens.wcamp,
-    baseCampTestnetTokens.usdc,
+    megaEthTestnetTokens.wcamp,
+    megaEthTestnetTokens.usdc,
     swapAmount,
     TradeType.EXACT_INPUT,
     false

@@ -12,9 +12,9 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import {
-  basecampTestnet,
-  baseCampTestnetTokens,
-} from "./config/base-testnet";
+  megaethTestnet,
+  megaEthTestnetTokens,
+} from "./config/megaeth-testnet";
 import { getContractsForChain } from "./config/chains";
 import { ChainId } from "@summitx/chains";
 import { TokenQuoter } from "./quoter/token-quoter";
@@ -70,7 +70,7 @@ async function checkAndApproveToken(
     logger.info(
       `Approving ${formatUnits(
         amount,
-        basecampTestnet.nativeCurrency.decimals
+        megaethTestnet.nativeCurrency.decimals
       )} tokens...`
     );
     const hash = await walletClient.writeContract({
@@ -87,11 +87,10 @@ async function checkAndApproveToken(
 async function getBalances(publicClient: any, address: Address) {
   // Define tokens for balance checking
   const BALANCE_TOKENS = {
-    usdc: baseCampTestnetTokens.usdc,
-    usdt: baseCampTestnetTokens.usdt,
-    weth: baseCampTestnetTokens.weth,
-    wbtc: baseCampTestnetTokens.wbtc,
-    dai: baseCampTestnetTokens.dai,
+    usdc: megaEthTestnetTokens.usdc,
+    usdt: megaEthTestnetTokens.usdt,
+    weth: megaEthTestnetTokens.weth,
+    dai: megaEthTestnetTokens.dai,
   };
 
   const [
@@ -99,7 +98,6 @@ async function getBalances(publicClient: any, address: Address) {
     usdcBalance,
     usdtBalance,
     wethBalance,
-    wbtcBalance,
     daiBalance,
   ] = await Promise.all([
     publicClient.getBalance({ address }),
@@ -122,12 +120,6 @@ async function getBalances(publicClient: any, address: Address) {
       args: [address],
     }),
     publicClient.readContract({
-      address: BALANCE_TOKENS.wbtc.address as Address,
-      abi: ERC20_ABI,
-      functionName: "balanceOf",
-      args: [address],
-    }),
-    publicClient.readContract({
       address: BALANCE_TOKENS.dai.address as Address,
       abi: ERC20_ABI,
       functionName: "balanceOf",
@@ -136,11 +128,10 @@ async function getBalances(publicClient: any, address: Address) {
   ]);
 
   return {
-    native: formatUnits(nativeBalance, basecampTestnet.nativeCurrency.decimals),
+    native: formatUnits(nativeBalance, megaethTestnet.nativeCurrency.decimals),
     usdc: formatUnits(usdcBalance, BALANCE_TOKENS.usdc.decimals),
     usdt: formatUnits(usdtBalance, BALANCE_TOKENS.usdt.decimals),
     weth: formatUnits(wethBalance, BALANCE_TOKENS.weth.decimals),
-    wbtc: formatUnits(wbtcBalance, BALANCE_TOKENS.wbtc.decimals),
     dai: formatUnits(daiBalance, BALANCE_TOKENS.dai.decimals),
   };
 }
@@ -158,8 +149,8 @@ async function executeSwap(
     logger.info(
       `Sending ${formatUnits(
         BigInt(methodParameters.value),
-        basecampTestnet.nativeCurrency.decimals
-      )} CAMP with transaction`
+        megaethTestnet.nativeCurrency.decimals
+      )} ETH with transaction`
     );
   }
 
@@ -202,22 +193,22 @@ async function main() {
   const account = privateKeyToAccount(process.env.PRIVATE_KEY as Hex);
 
   const publicClient = createPublicClient({
-    chain: basecampTestnet,
+    chain: megaethTestnet,
     transport: http(
-      process.env.BASE_TESTNET_RPC_URL || "https://rpc-campnetwork.xyz"
+      process.env.MEGAETH_TESTNET_RPC_URL || "https://timothy.megaeth.com/mafia/rpc/n0m3q6w9e2r5t8y1u4i7o0p3a6s9d2f5g8h1j4k7"
     ),
   });
 
   const walletClient = createWalletClient({
     account,
-    chain: basecampTestnet,
+    chain: megaethTestnet,
     transport: http(
-      process.env.BASE_TESTNET_RPC_URL || "https://rpc-campnetwork.xyz"
+      process.env.MEGAETH_TESTNET_RPC_URL || "https://timothy.megaeth.com/mafia/rpc/n0m3q6w9e2r5t8y1u4i7o0p3a6s9d2f5g8h1j4k7"
     ),
   });
 
   const quoter = new TokenQuoter({
-    rpcUrl: process.env.BASE_TESTNET_RPC_URL || "https://rpc-campnetwork.xyz",
+    rpcUrl: process.env.MEGAETH_TESTNET_RPC_URL || "https://timothy.megaeth.com/mafia/rpc/n0m3q6w9e2r5t8y1u4i7o0p3a6s9d2f5g8h1j4k7",
     slippageTolerance: 0.5,
     maxHops: 3,
     maxSplits: 3,
@@ -237,15 +228,15 @@ async function main() {
     await delay(3000);
 
     // ============================================
-    // 1. NATIVE TO ERC20 SWAP (CAMP → USDC)
+    // 1. NATIVE TO ERC20 SWAP (ETH → USDC)
     // ============================================
-    logger.header("1️⃣ Native to ERC20 Swap: CAMP → USDC");
+    logger.header("1️⃣ Native to ERC20 Swap: ETH → USDC");
 
     // Define tokens for this swap
-    const NATIVE_TO_ERC20_INPUT = baseCampTestnetTokens.wcamp; // Use WCAMP for native
-    const NATIVE_TO_ERC20_OUTPUT = baseCampTestnetTokens.usdc;
+    const NATIVE_TO_ERC20_INPUT = megaEthTestnetTokens.weth; // Use WETH for native
+    const NATIVE_TO_ERC20_OUTPUT = megaEthTestnetTokens.usdc;
 
-    const nativeToErc20Amount = "1"; // 1 CAMP
+    const nativeToErc20Amount = "1"; // 1 ETH
     const nativeToErc20Quote = await quoter.getQuote(
       NATIVE_TO_ERC20_INPUT,
       NATIVE_TO_ERC20_OUTPUT,
@@ -256,7 +247,7 @@ async function main() {
 
     if (nativeToErc20Quote) {
       logger.info("Quote received:", {
-        input: `${nativeToErc20Amount} CAMP`,
+        input: `${nativeToErc20Amount} ETH`,
         output: `${nativeToErc20Quote.outputAmount} ${NATIVE_TO_ERC20_OUTPUT.symbol}`,
         priceImpact: nativeToErc20Quote.priceImpact,
       });
@@ -276,29 +267,29 @@ async function main() {
       // For native token swap, ensure value is set
       const swapValue = parseUnits(
         nativeToErc20Amount,
-        basecampTestnet.nativeCurrency.decimals
-      ); // Native CAMP has 18 decimals
+        megaethTestnet.nativeCurrency.decimals
+      ); // Native ETH has 18 decimals
       methodParameters.value = swapValue.toString();
 
       await executeSwap(
         walletClient,
         publicClient,
         methodParameters,
-        "CAMP → USDC"
+        "ETH → USDC"
       );
       await delay(5000); // Wait 5 seconds before next transaction
     } else {
-      logger.warn("No route found for CAMP → USDC");
+      logger.warn("No route found for ETH → USDC");
     }
 
     // ============================================
-    // 2. ERC20 TO NATIVE SWAP (USDC → CAMP)
+    // 2. ERC20 TO NATIVE SWAP (USDC → ETH)
     // ============================================
-    logger.header("2️⃣ ERC20 to Native Swap: USDC → CAMP");
+    logger.header("2️⃣ ERC20 to Native Swap: USDC → ETH");
 
     // Define tokens for this swap
-    const ERC20_TO_NATIVE_INPUT = baseCampTestnetTokens.usdc;
-    const ERC20_TO_NATIVE_OUTPUT = baseCampTestnetTokens.wcamp; // Use WCAMP for native
+    const ERC20_TO_NATIVE_INPUT = megaEthTestnetTokens.usdc;
+    const ERC20_TO_NATIVE_OUTPUT = megaEthTestnetTokens.weth; // Use WETH for native
 
     const erc20ToNativeAmount = "1"; // 1 USDC
     const erc20ToNativeQuote = await quoter.getQuote(
@@ -312,7 +303,7 @@ async function main() {
     if (erc20ToNativeQuote) {
       logger.info("Quote received:", {
         input: `${erc20ToNativeAmount} ${ERC20_TO_NATIVE_INPUT.symbol}`,
-        output: `${erc20ToNativeQuote.outputAmount} CAMP`,
+        output: `${erc20ToNativeQuote.outputAmount} ETH`,
         priceImpact: erc20ToNativeQuote.priceImpact,
       });
 
@@ -344,11 +335,11 @@ async function main() {
         walletClient,
         publicClient,
         methodParameters,
-        "USDC → CAMP"
+        "USDC → ETH"
       );
       await delay(5000); // Wait 5 seconds before next transaction
     } else {
-      logger.warn("No route found for USDC → CAMP");
+      logger.warn("No route found for USDC → ETH");
     }
 
     // ============================================
@@ -357,8 +348,8 @@ async function main() {
     logger.header("3️⃣ ERC20 to ERC20 Swap: USDC → USDT");
 
     // Define tokens for this swap
-    const ERC20_TO_ERC20_INPUT = baseCampTestnetTokens.usdc;
-    const ERC20_TO_ERC20_OUTPUT = baseCampTestnetTokens.usdt;
+    const ERC20_TO_ERC20_INPUT = megaEthTestnetTokens.usdc;
+    const ERC20_TO_ERC20_OUTPUT = megaEthTestnetTokens.usdt;
 
     const erc20ToErc20Amount = "1"; // 1 of input token
     const erc20ToErc20Quote = await quoter.getQuote(
@@ -414,8 +405,8 @@ async function main() {
     logger.header("4️⃣ ERC20 to ERC20 Swap: WETH → WBTC");
 
     // Define tokens for this swap
-    const WETH_TO_WBTC_INPUT = baseCampTestnetTokens.weth;
-    const WETH_TO_WBTC_OUTPUT = baseCampTestnetTokens.wbtc;
+    const WETH_TO_WBTC_INPUT = megaEthTestnetTokens.weth;
+    const WETH_TO_WBTC_OUTPUT = megaEthTestnetTokens.usdt;
 
     const wethToWbtcAmount = "0.001"; // 0.001 WETH
     const wethToWbtcQuote = await quoter.getQuote(
@@ -471,8 +462,8 @@ async function main() {
     logger.header("5️⃣ ERC20 to ERC20 Swap: USDC → DAI");
 
     // Define tokens for this swap
-    const USDC_TO_DAI_INPUT = baseCampTestnetTokens.usdc;
-    const USDC_TO_DAI_OUTPUT = baseCampTestnetTokens.dai;
+    const USDC_TO_DAI_INPUT = megaEthTestnetTokens.usdc;
+    const USDC_TO_DAI_OUTPUT = megaEthTestnetTokens.dai;
 
     const usdcToDaiAmount = "1"; // 1 USDC
     const usdcToDaiQuote = await quoter.getQuote(
@@ -531,11 +522,10 @@ async function main() {
     logger.success("Final balances:", finalBalances);
 
     logger.info("Balance changes:", {
-      native: `${initialBalances.native} → ${finalBalances.native} CAMP`,
+      native: `${initialBalances.native} → ${finalBalances.native} ETH`,
       usdc: `${initialBalances.usdc} → ${finalBalances.usdc} USDC`,
       usdt: `${initialBalances.usdt} → ${finalBalances.usdt} USDT`,
       weth: `${initialBalances.weth} → ${finalBalances.weth} WETH`,
-      wbtc: `${initialBalances.wbtc} → ${finalBalances.wbtc} WBTC`,
       dai: `${initialBalances.dai} → ${finalBalances.dai} DAI`,
     });
 

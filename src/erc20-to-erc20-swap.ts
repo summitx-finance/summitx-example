@@ -12,9 +12,9 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import {
-  basecampTestnet,
-  baseCampTestnetTokens,
-} from "./config/base-testnet";
+  megaethTestnet,
+  megaEthTestnetTokens,
+} from "./config/megaeth-testnet";
 import { getContractsForChain } from "./config/chains";
 import { ChainId } from "@summitx/chains";
 import { TokenQuoter } from "./quoter/token-quoter";
@@ -46,7 +46,7 @@ async function executeSwap(
   account: any,
   quoter: TokenQuoter
 ) {
-  const contracts = getContractsForChain(ChainId.BASECAMP);
+  const contracts = getContractsForChain(ChainId.MEGAETH_TESTNET);
   logger.divider();
   logger.info(
     `Swapping ${amount} ${inputToken.symbol} → ${outputToken.symbol}`
@@ -154,7 +154,7 @@ async function main() {
   logger.info("Multiple token pair swaps");
   logger.divider();
 
-  const contracts = getContractsForChain(ChainId.BASECAMP);
+  const contracts = getContractsForChain(ChainId.MEGAETH_TESTNET);
 
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");
@@ -164,21 +164,21 @@ async function main() {
   const account = privateKeyToAccount(process.env.PRIVATE_KEY as Hex);
 
   const publicClient = createPublicClient({
-    chain: basecampTestnet,
-    transport: http(basecampTestnet.rpcUrls.default.http[0]),
+    chain: megaethTestnet,
+    transport: http(megaethTestnet.rpcUrls.default.http[0]),
   });
 
   const walletClient = createWalletClient({
     account,
-    chain: basecampTestnet,
-    transport: http(basecampTestnet.rpcUrls.default.http[0]),
+    chain: megaethTestnet,
+    transport: http(megaethTestnet.rpcUrls.default.http[0]),
   });
 
   logger.info(`Wallet address: ${account.address}`);
 
   // Initialize quoter
   const quoter = new TokenQuoter({
-    rpcUrl: basecampTestnet.rpcUrls.default.http[0],
+    rpcUrl: megaethTestnet.rpcUrls.default.http[0],
     slippageTolerance: 1.0,
     maxHops: 2,
     maxSplits: 2,
@@ -187,8 +187,8 @@ async function main() {
   });
 
   // Define primary tokens to use throughout the file
-  const PRIMARY_INPUT_TOKEN = baseCampTestnetTokens.usdc;
-  const PRIMARY_OUTPUT_TOKEN = baseCampTestnetTokens.usdt;
+  const PRIMARY_INPUT_TOKEN = megaEthTestnetTokens.usdc;
+  const PRIMARY_OUTPUT_TOKEN = megaEthTestnetTokens.usdt;
 
   try {
     // Add initial delay
@@ -199,9 +199,8 @@ async function main() {
     const tokens = [
       PRIMARY_INPUT_TOKEN,
       PRIMARY_OUTPUT_TOKEN,
-      baseCampTestnetTokens.dai,
-      baseCampTestnetTokens.weth,
-      baseCampTestnetTokens.wbtc,
+      megaEthTestnetTokens.dai,
+      megaEthTestnetTokens.weth,
     ];
 
     for (const token of tokens) {
@@ -223,26 +222,26 @@ async function main() {
         description: `${PRIMARY_INPUT_TOKEN.symbol} → ${PRIMARY_OUTPUT_TOKEN.symbol} (Stablecoin swap)`,
       },
       // {
-      //   input: baseCampTestnetTokens.usdt,
-      //   output: baseCampTestnetTokens.dai,
+      //   input: megaEthTestnetTokens.usdt,
+      //   output: megaEthTestnetTokens.dai,
       //   amount: "1",
       //   description: "USDT → DAI (Stablecoin swap)",
       // },
       // {
-      //   input: baseCampTestnetTokens.usdc,
-      //   output: baseCampTestnetTokens.weth,
+      //   input: megaEthTestnetTokens.usdc,
+      //   output: megaEthTestnetTokens.weth,
       //   amount: "1",
       //   description: "USDC → WETH",
       // },
       // {
-      //   input: baseCampTestnetTokens.weth,
-      //   output: baseCampTestnetTokens.wbtc,
+      //   input: megaEthTestnetTokens.weth,
+      //   output: megaEthTestnetTokens.wbtc,
       //   amount: "0.001",
       //   description: "WETH → WBTC",
       // },
       // {
-      //   input: baseCampTestnetTokens.dai,
-      //   output: baseCampTestnetTokens.usdc,
+      //   input: megaEthTestnetTokens.dai,
+      //   output: megaEthTestnetTokens.usdc,
       //   amount: "1",
       //   description: "DAI → USDC (Reverse stablecoin swap)",
       // },

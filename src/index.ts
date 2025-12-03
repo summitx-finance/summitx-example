@@ -34,7 +34,7 @@ async function main() {
   logger.header("💱 Running Wrap/Unwrap Example");
   const wrapSuccess = await runCommand(
     "npx tsx src/wrap-unwrap-example.ts",
-    "Wrap/Unwrap CAMP ↔ WCAMP"
+    "Wrap/Unwrap CAMP ↔ WETH"
   );
 
   if (!wrapSuccess) {

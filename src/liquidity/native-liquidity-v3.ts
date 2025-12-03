@@ -13,7 +13,7 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { NFT_POSITION_MANAGER_ABI } from "../config/abis";
-import { basecampTestnet, baseCampTestnetTokens } from "../config/base-testnet";
+import { megaethTestnet, megaEthTestnetTokens } from "../config/megaeth-testnet";
 import {
   applySlippage,
   getContractsForChain,
@@ -54,8 +54,8 @@ const FEE_TIER_OPTIONS = [
 ];
 
 async function main() {
-  logger.header("⚡ Native CAMP V3 Concentrated Liquidity");
-  logger.info("Manage concentrated liquidity positions with native CAMP");
+  logger.header("⚡ Native ETH V3 Concentrated Liquidity");
+  logger.info("Manage concentrated liquidity positions with native ETH");
   logger.divider();
 
   if (!process.env.PRIVATE_KEY) {
@@ -66,28 +66,28 @@ async function main() {
   const account = privateKeyToAccount(process.env.PRIVATE_KEY as Hex);
 
   const publicClient = createPublicClient({
-    chain: basecampTestnet,
-    transport: http(basecampTestnet.rpcUrls.default.http[0]),
+    chain: megaethTestnet,
+    transport: http(megaethTestnet.rpcUrls.default.http[0]),
   });
 
   const walletClient = createWalletClient({
     account,
-    chain: basecampTestnet,
-    transport: http(basecampTestnet.rpcUrls.default.http[0]),
+    chain: megaethTestnet,
+    transport: http(megaethTestnet.rpcUrls.default.http[0]),
   });
 
   logger.info(`Wallet address: ${account.address}`);
 
   try {
-    // Get native CAMP balance
+    // Get native ETH balance
     const nativeBalance = await LiquidityHelpers.getNativeBalance(
       publicClient,
       account.address
     );
-    logger.info(`\n💰 Native CAMP balance: ${formatUnits(nativeBalance, 18)}`);
+    logger.info(`\n💰 Native ETH balance: ${formatUnits(nativeBalance, 18)}`);
 
     if (nativeBalance < parseUnits("0.1", 18)) {
-      logger.error("Insufficient native CAMP balance (need at least 0.1 CAMP)");
+      logger.error("Insufficient native ETH balance (need at least 0.1 ETH)");
       return;
     }
 
@@ -142,22 +142,21 @@ async function addV3NativeLiquidity(
   userAddress: Address,
   nativeBalance: bigint
 ) {
-  logger.header("\n💧 Add V3 Native CAMP Concentrated Liquidity");
+  logger.header("\n💧 Add V3 Native ETH Concentrated Liquidity");
 
   // Define native V3 liquidity token pairs (excluding WCAMP since we're using native)
   const NATIVE_V3_PAIR_TOKENS = [
-    baseCampTestnetTokens.usdc,
-    baseCampTestnetTokens.usdt,
-    baseCampTestnetTokens.dai,
-    baseCampTestnetTokens.weth,
-    baseCampTestnetTokens.wbtc,
+    megaEthTestnetTokens.usdc,
+    megaEthTestnetTokens.usdt,
+    megaEthTestnetTokens.dai,
+    megaEthTestnetTokens.weth,
   ];
 
   // Get available tokens
   const tokens = NATIVE_V3_PAIR_TOKENS;
 
   // Get token balances
-  logger.info("\n📊 Available tokens to pair with native CAMP:");
+  logger.info("\n📊 Available tokens to pair with native ETH:");
   const tokenInfos: TokenInfo[] = [];
 
   for (const token of tokens) {
@@ -174,7 +173,7 @@ async function addV3NativeLiquidity(
   const tokenSymbols = tokenInfos.map((t) => t.symbol);
   const tokenIndex = readlineSync.keyInSelect(
     tokenSymbols,
-    "\nSelect token to pair with native CAMP:"
+    "\nSelect token to pair with native ETH:"
   );
 
   if (tokenIndex === -1) {
@@ -199,8 +198,8 @@ async function addV3NativeLiquidity(
   }
 
   logger.success(
-    `\n✅ Selected pair: ${isNativeToken0 ? "CAMP" : selectedToken.symbol}/${
-      !isNativeToken0 ? "CAMP" : selectedToken.symbol
+    `\n✅ Selected pair: ${isNativeToken0 ? "ETH" : selectedToken.symbol}/${
+      !isNativeToken0 ? "ETH" : selectedToken.symbol
     }`
   );
 
@@ -265,13 +264,13 @@ async function addV3NativeLiquidity(
     if (isNativeToken0) {
       if (adjustedPrice < 0.000001) {
         logger.info(
-          `Current price: 1 CAMP = ${adjustedPrice.toExponential(2)} ${
+          `Current price: 1 ETH = ${adjustedPrice.toExponential(2)} ${
             selectedToken.symbol
           }`
         );
       } else {
         logger.info(
-          `Current price: 1 CAMP = ${adjustedPrice.toFixed(6)} ${
+          `Current price: 1 ETH = ${adjustedPrice.toFixed(6)} ${
             selectedToken.symbol
           }`
         );
@@ -282,13 +281,13 @@ async function addV3NativeLiquidity(
         logger.info(
           `Current price: 1 ${
             selectedToken.symbol
-          } = ${invertedPrice.toExponential(2)} CAMP`
+          } = ${invertedPrice.toExponential(2)} ETH`
         );
       } else {
         logger.info(
           `Current price: 1 ${selectedToken.symbol} = ${invertedPrice.toFixed(
             6
-          )} CAMP`
+          )} ETH`
         );
       }
     }
@@ -307,16 +306,16 @@ async function addV3NativeLiquidity(
       currentPrice = 1;
       logger.info(
         `Using default price of 1 ${
-          !isNativeToken0 ? selectedToken.symbol : "CAMP"
-        } per ${isNativeToken0 ? selectedToken.symbol : "CAMP"}`
+          !isNativeToken0 ? selectedToken.symbol : "ETH"
+        } per ${isNativeToken0 ? selectedToken.symbol : "ETH"}`
       );
     } else {
       // Ask for initial price
       const initialPrice = readlineSync.question(
         `Enter initial price (${
-          !isNativeToken0 ? selectedToken.symbol : "CAMP"
+          !isNativeToken0 ? selectedToken.symbol : "ETH"
         } per ${
-          isNativeToken0 ? selectedToken.symbol : "CAMP"
+          isNativeToken0 ? selectedToken.symbol : "ETH"
         }, or press Enter for 1:1): `
       );
 
@@ -363,7 +362,7 @@ async function addV3NativeLiquidity(
     logger.warn(
       `⚠️ Current tick is extreme (${currentTick}). Using safer default range.`
     );
-    // For CAMP/stablecoin pairs, use a more reasonable tick around 0
+    // For ETH/stablecoin pairs, use a more reasonable tick around 0
     baseTick = 0;
     logger.info("Using tick 0 as base for price range calculation");
   }
@@ -438,7 +437,7 @@ async function addV3NativeLiquidity(
     18
   );
   const nativeAmountInput = readlineSync.question(
-    `\nEnter amount of native CAMP to add (max: ${maxNativeAmount}): `
+    `\nEnter amount of native ETH to add (max: ${maxNativeAmount}): `
   );
 
   if (!nativeAmountInput || isNaN(Number(nativeAmountInput))) {
@@ -483,13 +482,13 @@ async function addV3NativeLiquidity(
           selectedToken.decimals
         );
       } else {
-        logger.info("✅ Price is below your range. You'll only provide CAMP");
+        logger.info("✅ Price is below your range. You'll only provide ETH");
         tokenAmount = 0n;
       }
     } else {
       // Above range: only need token0 (lower value token)
       if (isNativeToken0) {
-        logger.info("✅ Price is above your range. You'll only provide CAMP");
+        logger.info("✅ Price is above your range. You'll only provide ETH");
         tokenAmount = 0n;
       } else {
         logger.warn(
@@ -513,7 +512,7 @@ async function addV3NativeLiquidity(
     // Simple approximation: use current price ratio
     // In reality, V3 math is more complex but this gives a reasonable estimate
     if (isNativeToken0) {
-      // CAMP is token0, calculate token1 amount
+      // ETH is token0, calculate token1 amount
       // For extremely small prices, use a reasonable estimate
       const nativeAmountInEther = Number(formatUnits(nativeAmount, 18));
       const effectivePrice = Math.max(currentPrice, 0.000000001);
@@ -523,7 +522,7 @@ async function addV3NativeLiquidity(
         selectedToken.decimals
       );
     } else {
-      // CAMP is token1, calculate token0 amount
+      // ETH is token1, calculate token0 amount
       const nativeAmountInEther = Number(formatUnits(nativeAmount, 18));
       const effectivePrice = Math.max(currentPrice, 0.000000001);
       const token0AmountInEther = nativeAmountInEther / effectivePrice;
@@ -551,7 +550,7 @@ async function addV3NativeLiquidity(
   const amount1Min = applySlippage(amount1Desired);
 
   logger.info("\n📝 Transaction Summary:");
-  logger.info(`  Native CAMP: ${formatUnits(nativeAmount, 18)}`);
+  logger.info(`  Native ETH: ${formatUnits(nativeAmount, 18)}`);
   logger.info(`  ${selectedToken.symbol}: ${tokenAmountFormatted}`);
   logger.info(`  Fee Tier: ${selectedFeeTier.name}`);
   const priceRangeLower =
@@ -612,9 +611,9 @@ async function addV3NativeLiquidity(
     deadline: getDeadline(),
   };
 
-  logger.info("\n💧 Adding V3 concentrated liquidity with native CAMP...");
+  logger.info("\n💧 Adding V3 concentrated liquidity with native ETH...");
 
-  // Use multicall to mint position with native CAMP
+  // Use multicall to mint position with native ETH
   const multicallData = [];
 
   // If pool doesn't exist, create it first
@@ -655,7 +654,7 @@ async function addV3NativeLiquidity(
     abi: NFT_POSITION_MANAGER_ABI,
     functionName: "multicall",
     args: [multicallData],
-    value: nativeAmount, // Send native CAMP
+    value: nativeAmount, // Send native ETH
   });
 
   logger.info(`Transaction sent: ${txHash}`);
@@ -678,7 +677,7 @@ async function removeV3NativeLiquidity(
   walletClient: any,
   userAddress: Address
 ) {
-  logger.header("\n💧 Remove V3 Native CAMP Liquidity");
+  logger.header("\n💧 Remove V3 Native ETH Liquidity");
 
   // Get user's V3 positions
   const positions = await LiquidityHelpers.getUserV3Positions(
@@ -698,23 +697,23 @@ async function removeV3NativeLiquidity(
   );
 
   if (nativePositions.length === 0) {
-    logger.warn("No native CAMP V3 positions found");
+    logger.warn("No native ETH V3 positions found");
     return;
   }
 
   // Display positions
   logger.success(
-    `\n📊 Found ${nativePositions.length} native CAMP V3 position(s):\n`
+    `\n📊 Found ${nativePositions.length} native ETH V3 position(s):\n`
   );
 
   for (let i = 0; i < nativePositions.length; i++) {
     const pos = nativePositions[i];
     const [token0Info, token1Info] = await Promise.all([
       pos.token0 === contracts.WCAMP
-        ? { symbol: "CAMP", decimals: 18 }
+        ? { symbol: "ETH", decimals: 18 }
         : LiquidityHelpers.getTokenInfo(publicClient, pos.token0, userAddress),
       pos.token1 === contracts.WCAMP
-        ? { symbol: "CAMP", decimals: 18 }
+        ? { symbol: "ETH", decimals: 18 }
         : LiquidityHelpers.getTokenInfo(publicClient, pos.token1, userAddress),
     ]);
 
@@ -783,7 +782,7 @@ async function removeV3NativeLiquidity(
     `  Liquidity to remove: ${liquidityToRemove} (${removalPercentage}%)`
   );
   logger.info(
-    `  Will receive native CAMP + ${
+    `  Will receive native ETH + ${
       selectedPosition.token0 === contracts.WCAMP ? "token" : "WCAMP"
     }`
   );
@@ -871,7 +870,7 @@ async function removeV3NativeLiquidity(
 
   if (receipt.status === "success") {
     logger.success("✅ Liquidity removed successfully!");
-    logger.success("Native CAMP and tokens received!");
+    logger.success("Native ETH and tokens received!");
 
     if (
       removalPercentage === 100 &&
@@ -930,10 +929,10 @@ async function collectV3Fees(
   for (const pos of positionsWithFees) {
     const [token0Info, token1Info] = await Promise.all([
       pos.token0 === contracts.WCAMP
-        ? { symbol: "CAMP", decimals: 18 }
+        ? { symbol: "ETH", decimals: 18 }
         : LiquidityHelpers.getTokenInfo(publicClient, pos.token0, userAddress),
       pos.token1 === contracts.WCAMP
-        ? { symbol: "CAMP", decimals: 18 }
+        ? { symbol: "ETH", decimals: 18 }
         : LiquidityHelpers.getTokenInfo(publicClient, pos.token1, userAddress),
     ]);
 
@@ -1007,7 +1006,7 @@ async function collectV3Fees(
 }
 
 async function viewV3NativePositions(publicClient: any, userAddress: Address) {
-  logger.header("\n📊 V3 Native CAMP Positions");
+  logger.header("\n📊 V3 Native ETH Positions");
 
   const positions = await LiquidityHelpers.getUserV3Positions(
     publicClient,
@@ -1027,22 +1026,22 @@ async function viewV3NativePositions(publicClient: any, userAddress: Address) {
   );
 
   if (nativePositions.length === 0) {
-    logger.warn("No native CAMP V3 positions found");
+    logger.warn("No native ETH V3 positions found");
     logger.info("\nAdd native liquidity using: npm run liquidity:native-v3");
     return;
   }
 
   logger.success(
-    `\n✅ Found ${nativePositions.length} native CAMP V3 position(s):\n`
+    `\n✅ Found ${nativePositions.length} native ETH V3 position(s):\n`
   );
 
   for (const pos of nativePositions) {
     const [token0Info, token1Info] = await Promise.all([
       pos.token0 === contracts.WCAMP
-        ? { symbol: "CAMP", decimals: 18 }
+        ? { symbol: "ETH", decimals: 18 }
         : LiquidityHelpers.getTokenInfo(publicClient, pos.token0, userAddress),
       pos.token1 === contracts.WCAMP
-        ? { symbol: "CAMP", decimals: 18 }
+        ? { symbol: "ETH", decimals: 18 }
         : LiquidityHelpers.getTokenInfo(publicClient, pos.token1, userAddress),
     ]);
 

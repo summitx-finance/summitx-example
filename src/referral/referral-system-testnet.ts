@@ -16,7 +16,7 @@ import {
   type Hex,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { basecampTestnet } from "../config/base-testnet";
+import { megaethTestnet } from "../config/megaeth-testnet";
 import { getContractsForChain } from "../config/chains";
 import { logger } from "../utils/logger";
 import { delay, waitForTransaction } from "../utils/transaction-helpers";
@@ -43,17 +43,17 @@ async function main() {
 
   const privateKey = process.env.PRIVATE_KEY as Hex;
   const account = privateKeyToAccount(privateKey);
-  const contracts = getContractsForChain(ChainId.BASECAMP);
+  const contracts = getContractsForChain(ChainId.MEGAETH_TESTNET);
 
   const publicClient = createPublicClient({
-    chain: basecampTestnet,
-    transport: http(basecampTestnet.rpcUrls.default.http[0]),
+    chain: megaethTestnet,
+    transport: http(megaethTestnet.rpcUrls.default.http[0]),
   });
 
   const walletClient = createWalletClient({
     account,
-    chain: basecampTestnet,
-    transport: http(basecampTestnet.rpcUrls.default.http[0]),
+    chain: megaethTestnet,
+    transport: http(megaethTestnet.rpcUrls.default.http[0]),
   });
 
   logger.info(`Wallet address: ${account.address}`);

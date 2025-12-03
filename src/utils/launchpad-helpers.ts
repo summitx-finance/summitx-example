@@ -23,13 +23,13 @@ export interface LaunchpadQuoteResult {
  * Get quote type for launchpad quote function
  * @param actionType - "buy" or "sell"
  * @param selectedSymbol - The symbol of the token being used (native token symbol for native trades)
- * @param nativeTokenSymbol - The native token symbol (e.g., "CAMP", "ETH")
+ * @param nativeTokenSymbol - The native token symbol (e.g., "ETH", "ETH")
  * @returns Quote type: 0 = buy with ETH, 1 = buy with tokens, 2 = sell for ETH, 3 = sell for tokens
  */
 export function getQuoteType(
   actionType: string,
   selectedSymbol: string,
-  nativeTokenSymbol: string = "CAMP"
+  nativeTokenSymbol: string = "ETH"
 ): number {
   if (actionType === "buy") {
     if (selectedSymbol === nativeTokenSymbol) {
@@ -50,12 +50,12 @@ export function getQuoteType(
  * Get the function name for launchpad trade based on action type and selected symbol
  * @param actionType - "buy" or "sell"
  * @param selectedSymbol - The symbol of the token being used (native token symbol for native trades)
- * @param nativeTokenSymbol - The native token symbol (e.g., "CAMP", "ETH")
+ * @param nativeTokenSymbol - The native token symbol (e.g., "ETH", "ETH")
  */
 export function getFunctionName(
   actionType: string,
   selectedSymbol: string,
-  nativeTokenSymbol: string = "CAMP"
+  nativeTokenSymbol: string = "ETH"
 ): string {
   if (actionType === "buy") {
     if (selectedSymbol === nativeTokenSymbol) return "buyExactEth";
@@ -85,7 +85,7 @@ export async function getLaunchpadQuote(
   amount: string,
   actionType: string,
   selectedSymbol: string,
-  nativeTokenSymbol: string = "CAMP"
+  nativeTokenSymbol: string = "ETH"
 ): Promise<LaunchpadQuoteResult> {
   const quoteType = getQuoteType(actionType, selectedSymbol, nativeTokenSymbol);
   const amountInWei = parseUnits(amount, 18); // Launchpad uses 18 decimals for amount
@@ -157,7 +157,7 @@ export const getArgs = (
   address: string,
   quote: any,
   code: string,
-  nativeTokenSymbol: string = "CAMP"
+  nativeTokenSymbol: string = "ETH"
 ) => {
   if (actionType === "buy")
     return [address, quote.amountOutToken.toString(), code];

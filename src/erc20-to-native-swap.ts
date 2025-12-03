@@ -12,7 +12,7 @@ import {
   type Hex,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { basecampTestnet, baseCampTestnetTokens } from "./config/base-testnet";
+import { megaethTestnet, megaEthTestnetTokens } from "./config/megaeth-testnet";
 import { getContractsForChain } from "./config/chains";
 import { TokenQuoter } from "./quoter/token-quoter";
 import { logger } from "./utils/logger";
@@ -39,7 +39,7 @@ async function main() {
   logger.info("Swapping USDC to CAMP (native) - includes automatic unwrap");
   logger.divider();
 
-  const contracts = getContractsForChain(ChainId.BASECAMP);
+  const contracts = getContractsForChain(ChainId.MEGAETH_TESTNET);
 
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");
@@ -49,21 +49,21 @@ async function main() {
   const account = privateKeyToAccount(process.env.PRIVATE_KEY as Hex);
 
   const publicClient = createPublicClient({
-    chain: basecampTestnet,
-    transport: http(basecampTestnet.rpcUrls.default.http[0]),
+    chain: megaethTestnet,
+    transport: http(megaethTestnet.rpcUrls.default.http[0]),
   });
 
   const walletClient = createWalletClient({
     account,
-    chain: basecampTestnet,
-    transport: http(basecampTestnet.rpcUrls.default.http[0]),
+    chain: megaethTestnet,
+    transport: http(megaethTestnet.rpcUrls.default.http[0]),
   });
 
   logger.info(`Wallet address: ${account.address}`);
 
   // Define tokens to use throughout the file
-  const INPUT_TOKEN = baseCampTestnetTokens.usdc;
-  const OUTPUT_TOKEN = baseCampTestnetTokens.wcamp; // WCAMP for native swaps
+  const INPUT_TOKEN = megaEthTestnetTokens.usdc;
+  const OUTPUT_TOKEN = megaEthTestnetTokens.weth; // WETH for native swaps
 
   // Check input token balance
   const inputBalance = await publicClient.readContract({
@@ -89,7 +89,7 @@ async function main() {
 
   // Initialize quoter
   const quoter = new TokenQuoter({
-    rpcUrl: basecampTestnet.rpcUrls.default.http[0],
+    rpcUrl: megaethTestnet.rpcUrls.default.http[0],
     slippageTolerance: 1.0,
     maxHops: 2,
     maxSplits: 2,
@@ -108,7 +108,7 @@ async function main() {
       `Getting quote for ${swapAmount} ${INPUT_TOKEN.symbol} → CAMP...`
     );
 
-    // Get quote - first get to WCAMP, then we'll unwrap
+    // Get quote - first get to WETH, then we'll unwrap
     const quote = await quoter.getQuote(
       INPUT_TOKEN,
       OUTPUT_TOKEN,
@@ -136,7 +136,7 @@ async function main() {
     logger.info(
       `Initial CAMP balance: ${formatUnits(
         initialNativeBalance,
-        basecampTestnet.nativeCurrency.decimals
+        megaethTestnet.nativeCurrency.decimals
       )}`
     );
 
@@ -160,10 +160,10 @@ async function main() {
     });
 
     // Add unwrap to get native CAMP
-    // The router needs to swap to WCAMP and then unwrap to native
+    // The router needs to swap to WETH and then unwrap to native
     logger.info("Executing swap with automatic unwrap to native CAMP...");
 
-    // Check if WCAMP balance before (for debugging)
+    // Check if WETH balance before (for debugging)
     const wcampBalanceBefore = await publicClient.readContract({
       address: OUTPUT_TOKEN.address as Address,
       abi: ERC20_ABI,
@@ -171,7 +171,7 @@ async function main() {
       args: [account.address],
     });
     logger.info(
-      `WCAMP balance before: ${formatUnits(
+      `WETH balance before: ${formatUnits(
         wcampBalanceBefore,
         OUTPUT_TOKEN.decimals
       )}`
@@ -207,7 +207,7 @@ async function main() {
     ]);
 
     logger.info(
-      `WCAMP balance after swap: ${formatUnits(
+      `WETH balance after swap: ${formatUnits(
         wcampBalanceAfter,
         OUTPUT_TOKEN.decimals
       )}`
@@ -215,15 +215,15 @@ async function main() {
     const wcampReceived = wcampBalanceAfter - wcampBalanceBefore;
 
     if (wcampReceived > 0n) {
-      // We received WCAMP, need to unwrap it to native CAMP
+      // We received WETH, need to unwrap it to native CAMP
       logger.info(
         `Received ${formatUnits(
           wcampReceived,
           OUTPUT_TOKEN.decimals
-        )} WCAMP, unwrapping to native CAMP...`
+        )} WETH, unwrapping to native CAMP...`
       );
 
-      // Unwrap WCAMP to native CAMP
+      // Unwrap WETH to native CAMP
       const WETH_ABI = [
         {
           name: "withdraw",
@@ -263,10 +263,10 @@ async function main() {
       )} → ${formatUnits(finalUsdcBalance, INPUT_TOKEN.decimals)}`,
       "Native CAMP": `${formatUnits(
         initialNativeBalance,
-        basecampTestnet.nativeCurrency.decimals
+        megaethTestnet.nativeCurrency.decimals
       )} → ${formatUnits(
         finalNativeBalance,
-        basecampTestnet.nativeCurrency.decimals
+        megaethTestnet.nativeCurrency.decimals
       )}`,
     });
   } catch (error: any) {

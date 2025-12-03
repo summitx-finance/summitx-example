@@ -12,9 +12,9 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import {
-  basecampTestnet,
-  baseCampTestnetTokens,
-} from "../config/base-testnet";
+  megaethTestnet,
+  megaEthTestnetTokens,
+} from "../config/megaeth-testnet";
 import { getContractsForChain } from "../config/chains";
 import { ChainId } from "@summitx/chains";
 import { logger } from "../utils/logger";
@@ -91,8 +91,10 @@ async function getPairInfo(
   tokenB: Address
 ) {
   // Get pair address
+  const contracts = getContractsForChain(ChainId.MEGAETH_TESTNET);
+
   const pairAddress = await publicClient.readContract({
-    address: contracts.V2_FACTORY,
+    address: contracts.V2_FACTORY as Address,
     abi: V2_FACTORY_ABI,
     functionName: "getPair",
     args: [tokenA, tokenB],
@@ -149,6 +151,7 @@ async function calculateOptimalAmounts(
   decimalsB: number
 ) {
   const pairInfo = await getPairInfo(publicClient, tokenA, tokenB);
+  const contracts = getContractsForChain(ChainId.MEGAETH_TESTNET);
 
   if (!pairInfo) {
     // New pair - use provided amounts
@@ -176,7 +179,7 @@ async function main() {
   logger.info("Add liquidity to V2 AMM pools on Base Camp Testnet");
   logger.divider();
 
-  const contracts = getContractsForChain(ChainId.BASECAMP);
+  const contracts = getContractsForChain(ChainId.MEGAETH_TESTNET);
 
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");
@@ -186,27 +189,25 @@ async function main() {
   const account = privateKeyToAccount(process.env.PRIVATE_KEY as Hex);
 
   const publicClient = createPublicClient({
-    chain: basecampTestnet,
-    transport: http(basecampTestnet.rpcUrls.default.http[0]),
+    chain: megaethTestnet,
+    transport: http(megaethTestnet.rpcUrls.default.http[0]),
   });
 
   const walletClient = createWalletClient({
     account,
-    chain: basecampTestnet,
-    transport: http(basecampTestnet.rpcUrls.default.http[0]),
+    chain: megaethTestnet,
+    transport: http(megaethTestnet.rpcUrls.default.http[0]),
   });
 
   logger.info(`Wallet address: ${account.address}`);
 
   // Define available tokens for liquidity
   const LIQUIDITY_TOKENS = [
-    baseCampTestnetTokens.wcamp,
-    baseCampTestnetTokens.usdc,
-    baseCampTestnetTokens.usdt,
-    baseCampTestnetTokens.dai,
-    baseCampTestnetTokens.weth,
-    baseCampTestnetTokens.wbtc,
-  ];
+    megaEthTestnetTokens.usdc,
+    megaEthTestnetTokens.usdt,
+    megaEthTestnetTokens.dai,
+    megaEthTestnetTokens.weth,
+      ];
 
   try {
     // Get available tokens
@@ -397,11 +398,11 @@ async function main() {
 
     let txHash: Hex;
 
-    // Check if one of the tokens is WCAMP and user wants to use native CAMP
+    // Check if one of the tokens is WCAMP and user wants to use native ETH
     const isTokenAWCAMP =
-      tokenA.address.toLowerCase() === contracts.WCAMP.toLowerCase();
+      tokenA.address.toLowerCase() === contracts.WETH.toLowerCase();
     const isTokenBWCAMP =
-      tokenB.address.toLowerCase() === contracts.WCAMP.toLowerCase();
+      tokenB.address.toLowerCase() === contracts.WETH.toLowerCase();
 
     if (isTokenAWCAMP || isTokenBWCAMP) {
       // Check native balance
@@ -412,10 +413,10 @@ async function main() {
       const campAmount = isTokenAWCAMP ? amountA : amountB;
       const nativeFormatted = formatUnits(nativeBalance, 18);
 
-      logger.info(`\n💰 Native CAMP balance: ${nativeFormatted}`);
+      logger.info(`\n💰 Native ETH balance: ${nativeFormatted}`);
 
       const useNative = readlineSync.keyInYNStrict(
-        "\nWould you like to use native CAMP instead of WCAMP?"
+        "\nWould you like to use native ETH instead of WCAMP?"
       );
 
       if (useNative) {
@@ -424,9 +425,9 @@ async function main() {
         const totalNeeded = campAmount + estimatedGas;
 
         if (nativeBalance < totalNeeded) {
-          logger.error(`Insufficient native CAMP balance`);
-          logger.info(`Need: ${formatUnits(campAmount, 18)} CAMP + gas`);
-          logger.info(`Have: ${nativeFormatted} CAMP`);
+          logger.error(`Insufficient native ETH balance`);
+          logger.info(`Need: ${formatUnits(campAmount, 18)} ETH + gas`);
+          logger.info(`Have: ${nativeFormatted} ETH`);
           return;
         }
 
@@ -436,8 +437,8 @@ async function main() {
         const campAmountMin =
           (campAmount * (10000n - slippageTolerance)) / 10000n;
 
-        logger.info("\n💧 Adding liquidity with native CAMP...");
-        logger.info(`Native CAMP: ${formatUnits(campAmount, 18)}`);
+        logger.info("\n💧 Adding liquidity with native ETH...");
+        logger.info(`Native ETH: ${formatUnits(campAmount, 18)}`);
         logger.info(
           `${otherToken.symbol}: ${formatUnits(
             otherAmount,
@@ -445,7 +446,7 @@ async function main() {
           )}`
         );
 
-        // Use addLiquidityETH for native CAMP
+        // Use addLiquidityETH for native ETH
         txHash = await walletClient.writeContract({
           address: contracts.V2_ROUTER as Address,
           abi: V2_ROUTER_ABI,

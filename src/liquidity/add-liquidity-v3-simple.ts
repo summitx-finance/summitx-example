@@ -10,7 +10,7 @@ import {
   type Hex,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { basecampTestnet, baseCampTestnetTokens } from "../config/base-testnet";
+import { megaethTestnet, megaEthTestnetTokens } from "../config/megaeth-testnet";
 import { getContractsForChain } from "../config/chains";
 import { ChainId } from "@summitx/chains";
 import { logger } from "../utils/logger";
@@ -18,44 +18,38 @@ import { logger } from "../utils/logger";
 config();
 
 // Token configuration
-const contracts = getContractsForChain(ChainId.BASECAMP);
+const contracts = getContractsForChain(ChainId.MEGAETH_TESTNET);
 const TOKENS = [
   {
-    address: baseCampTestnetTokens.wcamp.address,
-    symbol: baseCampTestnetTokens.wcamp.symbol || "wCAMP",
-    decimals: baseCampTestnetTokens.wcamp.decimals || 18,
-    name: baseCampTestnetTokens.wcamp.name || "Wrapped CAMP"
+    address: megaEthTestnetTokens.weth.address,
+    symbol: megaEthTestnetTokens.weth.symbol || "wETH",
+    decimals: megaEthTestnetTokens.weth.decimals || 18,
+    name: megaEthTestnetTokens.weth.name || "Wrapped ETH"
   },
   {
-    address: baseCampTestnetTokens.usdc.address,
-    symbol: baseCampTestnetTokens.usdc.symbol || "USDC",
-    decimals: baseCampTestnetTokens.usdc.decimals || 6,
-    name: baseCampTestnetTokens.usdc.name || "USD Coin"
+    address: megaEthTestnetTokens.usdc.address,
+    symbol: megaEthTestnetTokens.usdc.symbol || "USDC",
+    decimals: megaEthTestnetTokens.usdc.decimals || 6,
+    name: megaEthTestnetTokens.usdc.name || "USD Coin"
   },
   {
-    address: baseCampTestnetTokens.usdt.address,
-    symbol: baseCampTestnetTokens.usdt.symbol || "USDT",
-    decimals: baseCampTestnetTokens.usdt.decimals || 6,
-    name: baseCampTestnetTokens.usdt.name || "Tether USD"
+    address: megaEthTestnetTokens.usdt.address,
+    symbol: megaEthTestnetTokens.usdt.symbol || "USDT",
+    decimals: megaEthTestnetTokens.usdt.decimals || 6,
+    name: megaEthTestnetTokens.usdt.name || "Tether USD"
   },
   {
-    address: baseCampTestnetTokens.dai.address,
-    symbol: baseCampTestnetTokens.dai.symbol || "DAI",
-    decimals: baseCampTestnetTokens.dai.decimals || 18,
-    name: baseCampTestnetTokens.dai.name || "DAI Stablecoin"
+    address: megaEthTestnetTokens.dai.address,
+    symbol: megaEthTestnetTokens.dai.symbol || "DAI",
+    decimals: megaEthTestnetTokens.dai.decimals || 18,
+    name: megaEthTestnetTokens.dai.name || "DAI Stablecoin"
   },
   {
-    address: baseCampTestnetTokens.weth.address,
-    symbol: baseCampTestnetTokens.weth.symbol || "WETH",
-    decimals: baseCampTestnetTokens.weth.decimals || 18,
-    name: baseCampTestnetTokens.weth.name || "Wrapped ETH"
+    address: megaEthTestnetTokens.weth.address,
+    symbol: megaEthTestnetTokens.weth.symbol || "WETH",
+    decimals: megaEthTestnetTokens.weth.decimals || 18,
+    name: megaEthTestnetTokens.weth.name || "Wrapped ETH"
   },
-  {
-    address: baseCampTestnetTokens.wbtc.address,
-    symbol: baseCampTestnetTokens.wbtc.symbol || "WBTC",
-    decimals: baseCampTestnetTokens.wbtc.decimals || 8,
-    name: baseCampTestnetTokens.wbtc.name || "Wrapped BTC"
-  }
 ];
 
 async function main() {
@@ -71,17 +65,17 @@ async function main() {
   const account = privateKeyToAccount(process.env.PRIVATE_KEY as Hex);
 
   const publicClient = createPublicClient({
-    chain: basecampTestnet,
+    chain: megaethTestnet,
     transport: http(
-      process.env.BASE_TESTNET_RPC_URL || "https://rpc-campnetwork.xyz"
+      process.env.MEGAETH_TESTNET_RPC_URL || "https://timothy.megaeth.com/mafia/rpc/n0m3q6w9e2r5t8y1u4i7o0p3a6s9d2f5g8h1j4k7"
     ),
   });
 
   const walletClient = createWalletClient({
     account,
-    chain: basecampTestnet,
+    chain: megaethTestnet,
     transport: http(
-      process.env.BASE_TESTNET_RPC_URL || "https://rpc-campnetwork.xyz"
+      process.env.MEGAETH_TESTNET_RPC_URL || "https://timothy.megaeth.com/mafia/rpc/n0m3q6w9e2r5t8y1u4i7o0p3a6s9d2f5g8h1j4k7"
     ),
   });
 

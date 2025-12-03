@@ -19,7 +19,7 @@ import { logger } from "../utils/logger";
 config();
 
 async function main() {
-  const contracts = getContractsForChain(ChainId.CAMP);
+  const contracts = getContractsForChain(ChainId.MEGAETH_TESTNET);
 
   logger.header("💧 Remove V3 Liquidity");
   logger.info("Remove liquidity from Uniswap V3 concentrated positions");
@@ -102,7 +102,7 @@ async function main() {
         pos.token0,
         pos.token1,
         pos.fee,
-        ChainId.CAMP
+        ChainId.BASECAMP
       );
 
       if (poolInfo) {

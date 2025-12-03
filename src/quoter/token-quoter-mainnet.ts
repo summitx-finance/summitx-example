@@ -60,7 +60,7 @@ export class TokenQuoter {
   private v2SubgraphClient: GraphQLClient;
 
   constructor(options: TokenQuoterOptions = {}) {
-    this.chainId = options.chainId || ChainId.CAMP;
+    this.chainId = options.chainId || ChainId.MEGAETH_TESTNET;
 
     this.options = {
       rpcUrl: options.rpcUrl || campMainnet.rpcUrls.default.http[0],

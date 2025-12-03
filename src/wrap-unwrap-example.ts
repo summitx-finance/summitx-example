@@ -9,7 +9,7 @@ import {
   type Hex,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { basecampTestnet } from "./config/base-testnet";
+import { megaethTestnet } from "./config/megaeth-testnet";
 import { getContractsForChain } from "./config/chains";
 import { ChainId } from "@summitx/chains";
 import { logger } from "./utils/logger";
@@ -48,26 +48,28 @@ const WETH_ABI = [
 ] as const;
 
 async function main() {
-  const contracts = getContractsForChain(ChainId.BASECAMP);
+  const contracts = getContractsForChain(ChainId.MEGAETH_TESTNET);
 
-  logger.header("Wrap/Unwrap Example - Base Camp Testnet");
-
+  logger.header("Wrap/Unwrap Example - MegaETH Testnet");
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");
     process.exit(1);
   }
 
-  const account = privateKeyToAccount(process.env.PRIVATE_KEY as Hex);
+  const privateKey = process.env.PRIVATE_KEY.startsWith("0x")
+    ? process.env.PRIVATE_KEY
+    : `0x${process.env.PRIVATE_KEY}`;
+  const account = privateKeyToAccount(privateKey as Hex);
 
   const publicClient = createPublicClient({
-    chain: basecampTestnet,
-    transport: http(basecampTestnet.rpcUrls.default.http[0]),
+    chain: megaethTestnet,
+    transport: http(megaethTestnet.rpcUrls.default.http[0]),
   });
 
   const walletClient = createWalletClient({
     account,
-    chain: basecampTestnet,
-    transport: http(basecampTestnet.rpcUrls.default.http[0]),
+    chain: megaethTestnet,
+    transport: http(megaethTestnet.rpcUrls.default.http[0]),
   });
 
   logger.info(`Wallet address: ${account.address}`);
@@ -78,24 +80,24 @@ async function main() {
     });
 
     const wethBalance = await publicClient.readContract({
-      address: contracts.WCAMP as Address,
+      address: contracts.WETH as Address,
       abi: WETH_ABI,
       functionName: "balanceOf",
       args: [account.address],
     });
 
     logger.info("Current balances:", {
-      nativeCAMP: formatUnits(nativeBalance, 18),
-      wrappedCAMP: formatUnits(wethBalance, 18),
+      nativeETH: formatUnits(nativeBalance, 18),
+      wrappedETH: formatUnits(wethBalance, 18),
     });
 
-    logger.header("1. Wrapping Native CAMP to WCAMP");
+    logger.header("1. Wrapping Native ETH to WETH");
 
     const wrapAmount = parseUnits("0.01", 18);
-    logger.info(`Wrapping ${formatUnits(wrapAmount, 18)} CAMP...`);
+    logger.info(`Wrapping ${formatUnits(wrapAmount, 18)} ETH...`);
 
     const wrapHash = await walletClient.writeContract({
-      address: contracts.WCAMP as Address,
+      address: contracts.WETH as Address,
       abi: WETH_ABI,
       functionName: "deposit",
       value: wrapAmount,
@@ -112,23 +114,23 @@ async function main() {
     );
 
     const newWethBalance = await publicClient.readContract({
-      address: contracts.WCAMP as Address,
+      address: contracts.WETH as Address,
       abi: WETH_ABI,
       functionName: "balanceOf",
       args: [account.address],
     });
 
-    logger.info(`New WCAMP balance: ${formatUnits(newWethBalance, 18)}`);
+    logger.info(`New WETH balance: ${formatUnits(newWethBalance, 18)}`);
 
-    logger.header("2. Unwrapping WCAMP to Native CAMP");
+    logger.header("2. Unwrapping WETH to Native ETH");
 
     const unwrapAmount = parseUnits("0.005", 18);
 
     if (newWethBalance >= unwrapAmount) {
-      logger.info(`Unwrapping ${formatUnits(unwrapAmount, 18)} WCAMP...`);
+      logger.info(`Unwrapping ${formatUnits(unwrapAmount, 18)} WETH...`);
 
       const unwrapHash = await walletClient.writeContract({
-        address: contracts.WCAMP as Address,
+        address: contracts.WETH as Address,
         abi: WETH_ABI,
         functionName: "withdraw",
         args: [unwrapAmount],
@@ -149,18 +151,18 @@ async function main() {
       });
 
       const finalWethBalance = await publicClient.readContract({
-        address: contracts.WCAMP as Address,
+        address: contracts.WETH as Address,
         abi: WETH_ABI,
         functionName: "balanceOf",
         args: [account.address],
       });
 
       logger.success("Final balances:", {
-        nativeCAMP: formatUnits(finalNativeBalance, 18),
-        wrappedCAMP: formatUnits(finalWethBalance, 18),
+        nativeETH: formatUnits(finalNativeBalance, 18),
+        wrappedETH: formatUnits(finalWethBalance, 18),
       });
     } else {
-      logger.warn("Insufficient WCAMP balance for unwrapping");
+      logger.warn("Insufficient WETH balance for unwrapping");
     }
 
     logger.header("3. Advanced: Batch Wrap Operations");
@@ -175,10 +177,10 @@ async function main() {
 
     for (let i = 0; i < batchWrapAmounts.length; i++) {
       const amount = batchWrapAmounts[i];
-      logger.info(`Batch wrap ${i + 1}: ${formatUnits(amount, 18)} CAMP`);
+      logger.info(`Batch wrap ${i + 1}: ${formatUnits(amount, 18)} ETH`);
 
       const hash = await walletClient.writeContract({
-        address: contracts.WCAMP as Address,
+        address: contracts.WETH as Address,
         abi: WETH_ABI,
         functionName: "deposit",
         value: amount,
@@ -190,25 +192,25 @@ async function main() {
     }
 
     const finalBatchWethBalance = await publicClient.readContract({
-      address: contracts.WCAMP as Address,
+      address: contracts.WETH as Address,
       abi: WETH_ABI,
       functionName: "balanceOf",
       args: [account.address],
     });
 
     logger.success(
-      `Total WCAMP after batch: ${formatUnits(finalBatchWethBalance, 18)}`
+      `Total WETH after batch: ${formatUnits(finalBatchWethBalance, 18)}`
     );
 
     logger.header("4. Reading WETH Contract State");
 
     const totalSupply = await publicClient.readContract({
-      address: contracts.WCAMP as Address,
+      address: contracts.WETH as Address,
       abi: WETH_ABI,
       functionName: "totalSupply",
     });
 
-    logger.info("WCAMP Total Supply:", formatUnits(totalSupply, 18));
+    logger.info("WETH Total Supply:", formatUnits(totalSupply, 18));
 
     logger.success("🎉 Wrap/Unwrap example completed successfully!");
   } catch (error: any) {

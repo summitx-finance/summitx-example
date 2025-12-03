@@ -12,7 +12,7 @@ import {
   type Hex,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { basecampTestnet, baseCampTestnetTokens } from "../config/base-testnet";
+import { megaethTestnet, megaEthTestnetTokens } from "../config/megaeth-testnet";
 import { getContractsForChain } from "../config/chains";
 import { logger } from "../utils/logger";
 import { approveTokenWithWait } from "../utils/transaction-helpers";
@@ -85,10 +85,10 @@ async function getTokenInfo(
   return { address: tokenAddress, symbol, decimals, balance };
 }
 
-const contracts = getContractsForChain(ChainId.BASECAMP);
+const contracts = getContractsForChain(ChainId.MEGAETH_TESTNET);
 
 async function getPairInfo(publicClient: any, tokenAddress: Address) {
-  // Native CAMP pairs use WCAMP internally
+  // Native ETH pairs use WCAMP internally
   const pairAddress = await publicClient.readContract({
     address: contracts.V2_FACTORY,
     abi: V2_FACTORY_ABI,
@@ -140,11 +140,11 @@ async function getPairInfo(publicClient: any, tokenAddress: Address) {
 }
 
 async function main() {
-  logger.header("⚡ Native CAMP Liquidity Management");
-  logger.info("Add and remove liquidity using native CAMP directly");
+  logger.header("⚡ Native ETH Liquidity Management");
+  logger.info("Add and remove liquidity using native ETH directly");
   logger.divider();
 
-  const contracts = getContractsForChain(ChainId.BASECAMP);
+  const contracts = getContractsForChain(ChainId.MEGAETH_TESTNET);
 
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");
@@ -154,17 +154,17 @@ async function main() {
   const account = privateKeyToAccount(process.env.PRIVATE_KEY as Hex);
 
   const publicClient = createPublicClient({
-    chain: basecampTestnet,
+    chain: megaethTestnet,
     transport: http(
-      process.env.BASE_TESTNET_RPC_URL || "https://rpc-campnetwork.xyz"
+      process.env.MEGAETH_TESTNET_RPC_URL || "https://timothy.megaeth.com/mafia/rpc/n0m3q6w9e2r5t8y1u4i7o0p3a6s9d2f5g8h1j4k7"
     ),
   });
 
   const walletClient = createWalletClient({
     account,
-    chain: basecampTestnet,
+    chain: megaethTestnet,
     transport: http(
-      process.env.BASE_TESTNET_RPC_URL || "https://rpc-campnetwork.xyz"
+      process.env.MEGAETH_TESTNET_RPC_URL || "https://timothy.megaeth.com/mafia/rpc/n0m3q6w9e2r5t8y1u4i7o0p3a6s9d2f5g8h1j4k7"
     ),
   });
 
@@ -172,23 +172,22 @@ async function main() {
 
   // Define native liquidity token pairs (excluding WCAMP since we're using native)
   const NATIVE_PAIR_TOKENS = [
-    baseCampTestnetTokens.usdc,
-    baseCampTestnetTokens.usdt,
-    baseCampTestnetTokens.dai,
-    baseCampTestnetTokens.weth,
-    baseCampTestnetTokens.wbtc,
+    megaEthTestnetTokens.usdc,
+    megaEthTestnetTokens.usdt,
+    megaEthTestnetTokens.dai,
+    megaEthTestnetTokens.weth,
   ];
 
   try {
-    // Get native CAMP balance
+    // Get native ETH balance
     const nativeBalance = await publicClient.getBalance({
       address: account.address,
     });
 
-    logger.info(`\n💰 Native CAMP balance: ${formatUnits(nativeBalance, 18)}`);
+    logger.info(`\n💰 Native ETH balance: ${formatUnits(nativeBalance, 18)}`);
 
     if (nativeBalance < parseUnits("0.1", 18)) {
-      logger.error("Insufficient native CAMP balance (need at least 0.1 CAMP)");
+      logger.error("Insufficient native ETH balance (need at least 0.1 ETH)");
       return;
     }
 
@@ -210,13 +209,13 @@ async function main() {
 
     if (opIndex === 0) {
       // Add Native Liquidity
-      logger.header("\n💧 Add Native CAMP Liquidity");
+      logger.header("\n💧 Add Native ETH Liquidity");
 
       // Get available tokens (excluding WCAMP since we're using native)
       const tokens = NATIVE_PAIR_TOKENS;
 
       // Get token balances
-      logger.info("\n📊 Available tokens to pair with native CAMP:");
+      logger.info("\n📊 Available tokens to pair with native ETH:");
       const tokenInfos: TokenInfo[] = [];
 
       for (const token of tokens) {
@@ -231,11 +230,11 @@ async function main() {
         );
       }
 
-      // Select token to pair with native CAMP
+      // Select token to pair with native ETH
       const tokenSymbols = tokenInfos.map((t) => t.symbol);
       const tokenIndex = readlineSync.keyInSelect(
         tokenSymbols,
-        "\nSelect token to pair with native CAMP:"
+        "\nSelect token to pair with native ETH:"
       );
 
       if (tokenIndex === -1) {
@@ -245,7 +244,7 @@ async function main() {
 
       const selectedToken = tokenInfos[tokenIndex];
       logger.success(
-        `\n✅ Selected pair: CAMP (native) / ${selectedToken.symbol}`
+        `\n✅ Selected pair: ETH (native) / ${selectedToken.symbol}`
       );
 
       // Check if pair exists
@@ -255,7 +254,7 @@ async function main() {
 
       if (pairInfo) {
         logger.info(`\n📊 Pool exists with reserves:`);
-        logger.info(`  CAMP: ${formatUnits(pairInfo.reserveWCAMP, 18)}`);
+        logger.info(`  ETH: ${formatUnits(pairInfo.reserveWCAMP, 18)}`);
         logger.info(
           `  ${selectedToken.symbol}: ${formatUnits(
             pairInfo.reserveToken,
@@ -267,13 +266,13 @@ async function main() {
         logger.warn("⚠️ This will create a new pool");
       }
 
-      // Get amount of native CAMP to add
+      // Get amount of native ETH to add
       const maxNativeAmount = formatUnits(
         nativeBalance - parseUnits("0.01", 18),
         18
       ); // Keep some for gas
       const nativeAmountInput = readlineSync.question(
-        `\nEnter amount of native CAMP to add (max: ${maxNativeAmount}): `
+        `\nEnter amount of native ETH to add (max: ${maxNativeAmount}): `
       );
 
       if (!nativeAmountInput || isNaN(Number(nativeAmountInput))) {
@@ -354,7 +353,7 @@ async function main() {
         (tokenAmount * (10000n - slippageTolerance)) / 10000n;
 
       logger.info("\n📝 Transaction Summary:");
-      logger.info(`  Native CAMP: ${formatUnits(nativeAmount, 18)}`);
+      logger.info(`  Native ETH: ${formatUnits(nativeAmount, 18)}`);
       logger.info(
         `  ${selectedToken.symbol}: ${formatUnits(
           tokenAmount,
@@ -362,7 +361,7 @@ async function main() {
         )}`
       );
       logger.info(`  Slippage: 0.5%`);
-      logger.info(`  Min CAMP: ${formatUnits(nativeAmountMin, 18)}`);
+      logger.info(`  Min ETH: ${formatUnits(nativeAmountMin, 18)}`);
       logger.info(
         `  Min ${selectedToken.symbol}: ${formatUnits(
           tokenAmountMin,
@@ -390,8 +389,8 @@ async function main() {
         3000 // 3 second wait after approval
       );
 
-      // Add liquidity with native CAMP
-      logger.info("\n💧 Adding liquidity with native CAMP...");
+      // Add liquidity with native ETH
+      logger.info("\n💧 Adding liquidity with native ETH...");
       const deadline = BigInt(Math.floor(Date.now() / 1000) + 60 * 20);
 
       const txHash = await walletClient.writeContract({
@@ -447,9 +446,9 @@ async function main() {
       }
     } else if (opIndex === 1) {
       // Remove Native Liquidity
-      logger.header("\n💧 Remove Native CAMP Liquidity");
+      logger.header("\n💧 Remove Native ETH Liquidity");
 
-      // Find pairs with native CAMP
+      // Find pairs with native ETH
       const tokens = NATIVE_PAIR_TOKENS;
 
       const positions = [];
@@ -495,19 +494,19 @@ async function main() {
       }
 
       if (positions.length === 0) {
-        logger.warn("No native CAMP liquidity positions found");
+        logger.warn("No native ETH liquidity positions found");
         return;
       }
 
       // Display positions
       logger.success(
-        `\n📊 Found ${positions.length} native CAMP position(s):\n`
+        `\n📊 Found ${positions.length} native ETH position(s):\n`
       );
       positions.forEach((pos, index) => {
-        logger.info(`[${index}] CAMP/${pos.token.symbol}`);
+        logger.info(`[${index}] ETH/${pos.token.symbol}`);
         logger.info(`    LP Balance: ${formatUnits(pos.lpBalance, 18)}`);
         logger.info(`    Pool Share: ${pos.poolShare.toFixed(4)}%`);
-        logger.info(`    CAMP: ${formatUnits(pos.campAmount, 18)}`);
+        logger.info(`    ETH: ${formatUnits(pos.campAmount, 18)}`);
         logger.info(
           `    ${pos.token.symbol}: ${formatUnits(
             pos.tokenAmount,
@@ -519,7 +518,7 @@ async function main() {
 
       // Select position
       const posIndex = readlineSync.keyInSelect(
-        positions.map((p) => `CAMP/${p.token.symbol}`),
+        positions.map((p) => `ETH/${p.token.symbol}`),
         "\nSelect position to remove:"
       );
 
@@ -565,14 +564,14 @@ async function main() {
           18
         )} (${removalPercentage}%)`
       );
-      logger.info(`  Expected CAMP: ${formatUnits(expectedCAMP, 18)}`);
+      logger.info(`  Expected ETH: ${formatUnits(expectedCAMP, 18)}`);
       logger.info(
         `  Expected ${selectedPosition.token.symbol}: ${formatUnits(
           expectedToken,
           selectedPosition.token.decimals
         )}`
       );
-      logger.info(`  Min CAMP: ${formatUnits(campMin, 18)}`);
+      logger.info(`  Min ETH: ${formatUnits(campMin, 18)}`);
       logger.info(
         `  Min ${selectedPosition.token.symbol}: ${formatUnits(
           tokenMin,
@@ -600,8 +599,8 @@ async function main() {
         3000 // 3 second wait after approval
       );
 
-      // Remove liquidity and receive native CAMP
-      logger.info("\n💧 Removing liquidity to receive native CAMP...");
+      // Remove liquidity and receive native ETH
+      logger.info("\n💧 Removing liquidity to receive native ETH...");
       const deadline = BigInt(Math.floor(Date.now() / 1000) + 60 * 20);
 
       const txHash = await walletClient.writeContract({
@@ -625,7 +624,7 @@ async function main() {
 
       if (receipt.status === "success") {
         logger.success("✅ Liquidity removed successfully!");
-        logger.success("Native CAMP and tokens received!");
+        logger.success("Native ETH and tokens received!");
 
         // Check remaining LP balance
         const remainingLP = await publicClient.readContract({
@@ -649,7 +648,7 @@ async function main() {
       }
     } else {
       // View Native Positions
-      logger.header("\n📊 Native CAMP Liquidity Positions");
+      logger.header("\n📊 Native ETH Liquidity Positions");
 
       const tokens = NATIVE_PAIR_TOKENS;
 
@@ -698,21 +697,21 @@ async function main() {
       }
 
       if (positions.length === 0) {
-        logger.warn("No native CAMP liquidity positions found");
+        logger.warn("No native ETH liquidity positions found");
         logger.info("\nAdd liquidity using: npm run liquidity:native");
       } else {
         logger.success(
-          `\n✅ Found ${positions.length} native CAMP position(s):\n`
+          `\n✅ Found ${positions.length} native ETH position(s):\n`
         );
 
         let totalCAMPLocked = 0n;
 
         positions.forEach((pos, index) => {
-          logger.info(`[${index}] CAMP/${pos.token.symbol}`);
+          logger.info(`[${index}] ETH/${pos.token.symbol}`);
           logger.info(`    LP Balance: ${formatUnits(pos.lpBalance, 18)}`);
           logger.info(`    Pool Share: ${pos.poolShare.toFixed(4)}%`);
           logger.info(`    Your liquidity:`);
-          logger.info(`      CAMP: ${formatUnits(pos.campAmount, 18)}`);
+          logger.info(`      ETH: ${formatUnits(pos.campAmount, 18)}`);
           logger.info(
             `      ${pos.token.symbol}: ${formatUnits(
               pos.tokenAmount,
@@ -720,7 +719,7 @@ async function main() {
             )}`
           );
           logger.info(`    Pool reserves:`);
-          logger.info(`      CAMP: ${formatUnits(pos.totalReserveCAMP, 18)}`);
+          logger.info(`      ETH: ${formatUnits(pos.totalReserveCAMP, 18)}`);
           logger.info(
             `      ${pos.token.symbol}: ${formatUnits(
               pos.totalReserveToken,
@@ -734,7 +733,7 @@ async function main() {
         });
 
         logger.success(
-          `\n📈 Total CAMP in liquidity: ${formatUnits(totalCAMPLocked, 18)}`
+          `\n📈 Total ETH in liquidity: ${formatUnits(totalCAMPLocked, 18)}`
         );
       }
     }

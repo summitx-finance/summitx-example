@@ -10,7 +10,7 @@ import {
   type Hex,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { basecampTestnet } from "../config/base-testnet";
+import { megaethTestnet } from "../config/megaeth-testnet";
 import { getContractsForChain } from "../config/chains";
 import { ChainId } from "@summitx/chains";
 import { logger } from "../utils/logger";
@@ -216,7 +216,7 @@ async function main() {
   logger.info("Remove liquidity from V2 AMM pools on Base Camp Testnet");
   logger.divider();
 
-  const contracts = getContractsForChain(ChainId.BASECAMP);
+  const contracts = getContractsForChain(ChainId.MEGAETH_TESTNET);
 
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");
@@ -226,17 +226,17 @@ async function main() {
   const account = privateKeyToAccount(process.env.PRIVATE_KEY as Hex);
 
   const publicClient = createPublicClient({
-    chain: basecampTestnet,
+    chain: megaethTestnet,
     transport: http(
-      process.env.BASE_TESTNET_RPC_URL || "https://rpc-campnetwork.xyz"
+      process.env.MEGAETH_TESTNET_RPC_URL || "https://timothy.megaeth.com/mafia/rpc/n0m3q6w9e2r5t8y1u4i7o0p3a6s9d2f5g8h1j4k7"
     ),
   });
 
   const walletClient = createWalletClient({
     account,
-    chain: basecampTestnet,
+    chain: megaethTestnet,
     transport: http(
-      process.env.BASE_TESTNET_RPC_URL || "https://rpc-campnetwork.xyz"
+      process.env.MEGAETH_TESTNET_RPC_URL || "https://timothy.megaeth.com/mafia/rpc/n0m3q6w9e2r5t8y1u4i7o0p3a6s9d2f5g8h1j4k7"
     ),
   });
 
@@ -352,7 +352,7 @@ async function main() {
       )}`
     );
 
-    // Check if one token is WCAMP and offer to receive native CAMP
+    // Check if one token is WCAMP and offer to receive native ETH
     const hasWCAMP =
       selectedPosition.token0.toLowerCase() === contracts.WCAMP.toLowerCase() ||
       selectedPosition.token1.toLowerCase() === contracts.WCAMP.toLowerCase();
@@ -360,7 +360,7 @@ async function main() {
     let receiveNative = false;
     if (hasWCAMP) {
       receiveNative = readlineSync.keyInYNStrict(
-        "\nWould you like to receive native CAMP instead of WCAMP?"
+        "\nWould you like to receive native ETH instead of WCAMP?"
       );
     }
 

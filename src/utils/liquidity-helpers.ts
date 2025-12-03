@@ -12,7 +12,7 @@ import {
   parseUnits,
 } from "viem";
 import { ABIS } from "../config/abis";
-import { baseCampTestnetTokens } from "../config/base-testnet";
+import { megaEthTestnetTokens } from "../config/megaeth-testnet";
 import {
   TX_DEFAULTS,
   applySlippage,
@@ -84,35 +84,35 @@ export async function getTokenInfo(
     string,
     { symbol: string; decimals: number; name: string }
   > = {
-    [baseCampTestnetTokens.wcamp.address.toLowerCase()]: {
-      symbol: baseCampTestnetTokens.wcamp.symbol || "wCAMP",
-      decimals: baseCampTestnetTokens.wcamp.decimals || 18,
-      name: baseCampTestnetTokens.wcamp.name || "Wrapped CAMP",
+    [megaEthTestnetTokens.wcamp.address.toLowerCase()]: {
+      symbol: megaEthTestnetTokens.wcamp.symbol || "wCAMP",
+      decimals: megaEthTestnetTokens.wcamp.decimals || 18,
+      name: megaEthTestnetTokens.wcamp.name || "Wrapped CAMP",
     },
-    [baseCampTestnetTokens.usdc.address.toLowerCase()]: {
-      symbol: baseCampTestnetTokens.usdc.symbol || "USDC",
-      decimals: baseCampTestnetTokens.usdc.decimals || 6,
-      name: baseCampTestnetTokens.usdc.name || "USD Coin",
+    [megaEthTestnetTokens.usdc.address.toLowerCase()]: {
+      symbol: megaEthTestnetTokens.usdc.symbol || "USDC",
+      decimals: megaEthTestnetTokens.usdc.decimals || 6,
+      name: megaEthTestnetTokens.usdc.name || "USD Coin",
     },
-    [baseCampTestnetTokens.usdt.address.toLowerCase()]: {
-      symbol: baseCampTestnetTokens.usdt.symbol || "USDT",
-      decimals: baseCampTestnetTokens.usdt.decimals || 6,
-      name: baseCampTestnetTokens.usdt.name || "Tether USD",
+    [megaEthTestnetTokens.usdt.address.toLowerCase()]: {
+      symbol: megaEthTestnetTokens.usdt.symbol || "USDT",
+      decimals: megaEthTestnetTokens.usdt.decimals || 6,
+      name: megaEthTestnetTokens.usdt.name || "Tether USD",
     },
-    [baseCampTestnetTokens.dai.address.toLowerCase()]: {
-      symbol: baseCampTestnetTokens.dai.symbol || "DAI",
-      decimals: baseCampTestnetTokens.dai.decimals || 18,
-      name: baseCampTestnetTokens.dai.name || "DAI Stablecoin",
+    [megaEthTestnetTokens.dai.address.toLowerCase()]: {
+      symbol: megaEthTestnetTokens.dai.symbol || "DAI",
+      decimals: megaEthTestnetTokens.dai.decimals || 18,
+      name: megaEthTestnetTokens.dai.name || "DAI Stablecoin",
     },
-    [baseCampTestnetTokens.weth.address.toLowerCase()]: {
-      symbol: baseCampTestnetTokens.weth.symbol || "WETH",
-      decimals: baseCampTestnetTokens.weth.decimals || 18,
-      name: baseCampTestnetTokens.weth.name || "Wrapped ETH",
+    [megaEthTestnetTokens.weth.address.toLowerCase()]: {
+      symbol: megaEthTestnetTokens.weth.symbol || "WETH",
+      decimals: megaEthTestnetTokens.weth.decimals || 18,
+      name: megaEthTestnetTokens.weth.name || "Wrapped ETH",
     },
-    [baseCampTestnetTokens.wbtc.address.toLowerCase()]: {
-      symbol: baseCampTestnetTokens.wbtc.symbol || "WBTC",
-      decimals: baseCampTestnetTokens.wbtc.decimals || 8,
-      name: baseCampTestnetTokens.wbtc.name || "Wrapped BTC",
+    [megaEthTestnetTokens.wbtc.address.toLowerCase()]: {
+      symbol: megaEthTestnetTokens.wbtc.symbol || "WBTC",
+      decimals: megaEthTestnetTokens.wbtc.decimals || 8,
+      name: megaEthTestnetTokens.wbtc.name || "Wrapped BTC",
     },
   };
 

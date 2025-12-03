@@ -11,7 +11,7 @@ import {
   type Hex,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { baseCampTestnetTokens } from "../config/base-testnet";
+import { megaEthTestnetTokens } from "../config/megaeth-testnet";
 import { getContractsForChain } from "../config/chains";
 import { ChainId } from "@summitx/chains";
 import { TokenQuoter } from "../quoter/token-quoter";
@@ -29,8 +29,8 @@ const CHAIN_CONFIG = {
   network: "basecamp",
   nativeCurrency: { name: "CAMP", symbol: "CAMP", decimals: 18 },
   rpcUrls: {
-    default: { http: ["https://rpc-campnetwork.xyz"] },
-    public: { http: ["https://rpc-campnetwork.xyz"] },
+    default: { http: ["https://timothy.megaeth.com/mafia/rpc/n0m3q6w9e2r5t8y1u4i7o0p3a6s9d2f5g8h1j4k7"] },
+    public: { http: ["https://timothy.megaeth.com/mafia/rpc/n0m3q6w9e2r5t8y1u4i7o0p3a6s9d2f5g8h1j4k7"] },
   },
 };
 
@@ -67,7 +67,7 @@ const ERC20_ABI = [
 ] as const;
 
 async function main() {
-  const contracts = getContractsForChain(ChainId.BASECAMP);
+  const contracts = getContractsForChain(ChainId.MEGAETH_TESTNET);
 
   logger.header("SummitX Swap Execution - Interface Style");
 
@@ -84,14 +84,14 @@ async function main() {
     account,
     chain: CHAIN_CONFIG as any,
     transport: http(
-      "https://rpc-campnetwork.xyz/8708df38d9cc4bb39ac813ae005be495"
+      "https://timothy.megaeth.com/mafia/rpc/n0m3q6w9e2r5t8y1u4i7o0p3a6s9d2f5g8h1j4k7/8708df38d9cc4bb39ac813ae005be495"
     ),
   });
 
   const publicClient = createPublicClient({
     chain: CHAIN_CONFIG as any,
     transport: http(
-      "https://rpc-campnetwork.xyz/8708df38d9cc4bb39ac813ae005be495"
+      "https://timothy.megaeth.com/mafia/rpc/n0m3q6w9e2r5t8y1u4i7o0p3a6s9d2f5g8h1j4k7/8708df38d9cc4bb39ac813ae005be495"
     ),
   });
 
@@ -99,7 +99,7 @@ async function main() {
 
   // Initialize token quoter
   const quoter = new TokenQuoter({
-    rpcUrl: "https://rpc-campnetwork.xyz/8708df38d9cc4bb39ac813ae005be495",
+    rpcUrl: "https://timothy.megaeth.com/mafia/rpc/n0m3q6w9e2r5t8y1u4i7o0p3a6s9d2f5g8h1j4k7/8708df38d9cc4bb39ac813ae005be495",
     slippageTolerance: 5.0,
     maxHops: 3,
     maxSplits: 4,
@@ -108,8 +108,8 @@ async function main() {
   });
 
   // Define swap parameters
-  const inputToken = baseCampTestnetTokens.usdt;
-  const outputToken = baseCampTestnetTokens.usdc;
+  const inputToken = megaEthTestnetTokens.usdt;
+  const outputToken = megaEthTestnetTokens.usdc;
   const inputAmount = "1.50"; // 1.50 USDT
   const slippageTolerancePercent = new Percent(1000, 10000); // 1%
 

@@ -12,9 +12,9 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import {
-  basecampTestnet,
-  baseCampTestnetTokens,
-} from "../config/base-testnet";
+  megaethTestnet,
+  megaEthTestnetTokens,
+} from "../config/megaeth-testnet";
 import { getContractsForChain } from "../config/chains";
 import { ChainId } from "@summitx/chains";
 import { logger } from "../utils/logger";
@@ -160,7 +160,7 @@ async function main() {
   logger.info("Add concentrated liquidity to V3 pools on Base Camp Testnet");
   logger.divider();
 
-  const contracts = getContractsForChain(ChainId.BASECAMP);
+  const contracts = getContractsForChain(ChainId.MEGAETH_TESTNET);
 
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");
@@ -170,17 +170,17 @@ async function main() {
   const account = privateKeyToAccount(process.env.PRIVATE_KEY as Hex);
 
   const publicClient = createPublicClient({
-    chain: basecampTestnet,
+    chain: megaethTestnet,
     transport: http(
-      process.env.BASE_TESTNET_RPC_URL || "https://rpc-campnetwork.xyz"
+      process.env.MEGAETH_TESTNET_RPC_URL || "https://timothy.megaeth.com/mafia/rpc/n0m3q6w9e2r5t8y1u4i7o0p3a6s9d2f5g8h1j4k7"
     ),
   });
 
   const walletClient = createWalletClient({
     account,
-    chain: basecampTestnet,
+    chain: megaethTestnet,
     transport: http(
-      process.env.BASE_TESTNET_RPC_URL || "https://rpc-campnetwork.xyz"
+      process.env.MEGAETH_TESTNET_RPC_URL || "https://timothy.megaeth.com/mafia/rpc/n0m3q6w9e2r5t8y1u4i7o0p3a6s9d2f5g8h1j4k7"
     ),
   });
 
@@ -189,12 +189,10 @@ async function main() {
   try {
     // Define available tokens for V3 liquidity
     const V3_LIQUIDITY_TOKENS = [
-      { ...baseCampTestnetTokens.wcamp, fallbackSymbol: "wCAMP", fallbackDecimals: 18 },
-      { ...baseCampTestnetTokens.usdc, fallbackSymbol: "MUSDC", fallbackDecimals: 6 },
-      { ...baseCampTestnetTokens.usdt, fallbackSymbol: "MUSDT", fallbackDecimals: 6 },
-      { ...baseCampTestnetTokens.dai, fallbackSymbol: "DAI", fallbackDecimals: 18 },
-      { ...baseCampTestnetTokens.weth, fallbackSymbol: "WETH", fallbackDecimals: 18 },
-      { ...baseCampTestnetTokens.wbtc, fallbackSymbol: "WBTC", fallbackDecimals: 8 },
+      { ...megaEthTestnetTokens.usdc, fallbackSymbol: "MUSDC", fallbackDecimals: 6 },
+      { ...megaEthTestnetTokens.usdt, fallbackSymbol: "MUSDT", fallbackDecimals: 6 },
+      { ...megaEthTestnetTokens.dai, fallbackSymbol: "DAI", fallbackDecimals: 18 },
+      { ...megaEthTestnetTokens.weth, fallbackSymbol: "WETH", fallbackDecimals: 18 },
     ];
 
     // Get available tokens with fallback info

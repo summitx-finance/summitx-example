@@ -171,8 +171,8 @@ npm run wrap-unwrap            # Convert CAMP ↔ WCAMP
 ```typescript
 // Swap 0.01 CAMP to USDC
 const quote = await quoter.getQuote(
-  baseCampTestnetTokens.wcamp, // Use WCAMP for native
-  baseCampTestnetTokens.usdc,
+  megaEthTestnetTokens.wcamp, // Use WCAMP for native
+  megaEthTestnetTokens.usdc,
   "0.01", // Amount in decimal format
   TradeType.EXACT_INPUT,
   false
@@ -192,8 +192,8 @@ const tx = await walletClient.sendTransaction({
 ```typescript
 // Swap 0.5 USDC to native CAMP
 const quote = await quoter.getQuote(
-  baseCampTestnetTokens.usdc,
-  baseCampTestnetTokens.wcamp, // Quote to WCAMP first
+  megaEthTestnetTokens.usdc,
+  megaEthTestnetTokens.wcamp, // Quote to WCAMP first
   "0.5",
   TradeType.EXACT_INPUT,
   false
@@ -252,8 +252,8 @@ const txHash = await walletClient.writeContract({
 ```typescript
 // Swap 1 USDC to USDT
 const quote = await quoter.getQuote(
-  baseCampTestnetTokens.usdc,
-  baseCampTestnetTokens.usdt,
+  megaEthTestnetTokens.usdc,
+  megaEthTestnetTokens.usdt,
   "1",
   TradeType.EXACT_INPUT,
   false
@@ -457,7 +457,7 @@ PROOF_API_URL=https://your-proof-api-endpoint.com/proof
 # ============================================
 
 # Base Camp Testnet RPC URL (optional, defaults provided)
-BASE_TESTNET_RPC_URL=https://rpc-campnetwork.xyz
+MEGAETH_TESTNET_RPC_URL=https://timothy.megaeth.com/mafia/rpc/n0m3q6w9e2r5t8y1u4i7o0p3a6s9d2f5g8h1j4k7
 
 # Camp Mainnet RPC URL (optional, defaults provided)
 CAMP_MAINNET_RPC_URL=https://rpc.camp.raas.gelato.cloud
@@ -474,7 +474,7 @@ CAMP_MAINNET_RPC_URL=https://rpc.camp.raas.gelato.cloud
 
 ```typescript
 const quoter = new TokenQuoter({
-  rpcUrl: "https://rpc-campnetwork.xyz",
+  rpcUrl: "https://timothy.megaeth.com/mafia/rpc/n0m3q6w9e2r5t8y1u4i7o0p3a6s9d2f5g8h1j4k7",
   slippageTolerance: 1.0, // 1% slippage
   maxHops: 2, // Maximum route hops
   maxSplits: 2, // Maximum split routes
@@ -559,7 +559,7 @@ The main class for getting swap quotes:
 
 - **Network**: Base Camp Testnet
 - **Chain ID**: 123420001114
-- **RPC URL**: https://rpc-campnetwork.xyz
+- **RPC URL**: https://timothy.megaeth.com/mafia/rpc/n0m3q6w9e2r5t8y1u4i7o0p3a6s9d2f5g8h1j4k7
 - **Explorer**: https://basecamp.cloud.blockscout.com/
 - **Smart Router**: `0x197b7c9fC5c8AeA84Ab2909Bf94f24370539722D`
 - **V2 Router**: `0x03B38A5C3cf55cB3B8D61Dc7eaB7BBC0ec276708`

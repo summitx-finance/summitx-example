@@ -43,7 +43,7 @@ async function main() {
 
   const privateKey = process.env.PRIVATE_KEY as Hex;
   const account = privateKeyToAccount(privateKey);
-  const contracts = getContractsForChain(ChainId.CAMP);
+  const contracts = getContractsForChain(ChainId.MEGAETH_TESTNET);
 
   const publicClient = createPublicClient({
     chain: campMainnet,

@@ -1,7 +1,7 @@
 import { config } from "dotenv";
 import { createPublicClient, formatUnits, http, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { basecampTestnet, baseCampTestnetTokens } from "./config/base-testnet";
+import { megaethTestnet, megaEthTestnetTokens } from "./config/megaeth-testnet";
 import { logger } from "./utils/logger";
 
 config();
@@ -28,22 +28,20 @@ async function checkBalances() {
   logger.info(`Wallet address: ${account.address}`);
 
   const publicClient = createPublicClient({
-    chain: basecampTestnet,
-    transport: http("https://rpc-campnetwork.xyz"),
+    chain: megaethTestnet,
+    transport: http("https://timothy.megaeth.com/mafia/rpc/n0m3q6w9e2r5t8y1u4i7o0p3a6s9d2f5g8h1j4k7"),
   });
 
   // Get native balance
   const nativeBalance = await publicClient.getBalance({ address: account.address });
-  logger.info(`Native CAMP: ${formatUnits(nativeBalance, 18)}`);
+  logger.info(`Native ETH: ${formatUnits(nativeBalance, 18)}`);
 
   // Get token balances
   const tokens = [
-    { name: "USDC", token: baseCampTestnetTokens.usdc, decimals: 6 },
-    { name: "USDT", token: baseCampTestnetTokens.usdt, decimals: 6 },
-    { name: "WCAMP", token: baseCampTestnetTokens.wcamp, decimals: 18 },
-    { name: "WETH", token: baseCampTestnetTokens.weth, decimals: 18 },
-    { name: "WBTC", token: baseCampTestnetTokens.wbtc, decimals: 18 },
-    { name: "DAI", token: baseCampTestnetTokens.dai, decimals: 18 },
+    { name: "USDC", token: megaEthTestnetTokens.usdc, decimals: 6 },
+    { name: "USDT", token: megaEthTestnetTokens.usdt, decimals: 6 },
+    { name: "WETH", token: megaEthTestnetTokens.weth, decimals: 18 },
+    { name: "DAI", token: megaEthTestnetTokens.dai, decimals: 18 },
   ];
 
   logger.divider();
@@ -74,10 +72,10 @@ async function checkBalances() {
   
   logger.info("Recommended swap amounts:");
   if (maxNativeSwap > 0.001) {
-    logger.success(`Native CAMP swap: up to ${maxNativeSwap.toFixed(4)} CAMP`);
-    logger.info(`  Suggested: ${Math.min(0.01, maxNativeSwap * 0.5).toFixed(4)} CAMP`);
+    logger.success(`Native ETH swap: up to ${maxNativeSwap.toFixed(4)} ETH`);
+    logger.info(`  Suggested: ${Math.min(0.01, maxNativeSwap * 0.5).toFixed(4)} ETH`);
   } else {
-    logger.error(`Insufficient CAMP balance for swaps (need at least ${gasReserve} CAMP for gas)`);
+    logger.error(`Insufficient ETH balance for swaps (need at least ${gasReserve} ETH for gas)`);
   }
 }
 

@@ -1,5 +1,5 @@
 import { TokenQuoter } from "./quoter/token-quoter";
-import { baseCampTestnetTokens } from "./config/base-testnet";
+import { megaEthTestnetTokens } from "./config/megaeth-testnet";
 import { TradeType } from "@summitx/swap-sdk-core";
 import { logger } from "./utils/logger";
 
@@ -7,7 +7,7 @@ async function testQuoter() {
   logger.header("🧪 Testing TokenQuoter");
 
   const quoter = new TokenQuoter({
-    rpcUrl: "https://rpc-campnetwork.xyz",
+    rpcUrl: "https://timothy.megaeth.com/mafia/rpc/n0m3q6w9e2r5t8y1u4i7o0p3a6s9d2f5g8h1j4k7",
     slippageTolerance: 1.0,
     maxHops: 2,
     maxSplits: 2,
@@ -18,32 +18,32 @@ async function testQuoter() {
   const testCases = [
     { 
       name: "USDC → USDT (0.1)",
-      input: baseCampTestnetTokens.usdc,
-      output: baseCampTestnetTokens.usdt,
+      input: megaEthTestnetTokens.usdc,
+      output: megaEthTestnetTokens.usdt,
       amount: "0.1"
     },
     { 
       name: "USDC → USDT (1.0)",
-      input: baseCampTestnetTokens.usdc,
-      output: baseCampTestnetTokens.usdt,
+      input: megaEthTestnetTokens.usdc,
+      output: megaEthTestnetTokens.usdt,
       amount: "1.0"
     },
     { 
       name: "USDT → USDC (0.1)",
-      input: baseCampTestnetTokens.usdt,
-      output: baseCampTestnetTokens.usdc,
+      input: megaEthTestnetTokens.usdt,
+      output: megaEthTestnetTokens.usdc,
       amount: "0.1"
     },
     { 
       name: "WCAMP → USDC (0.01)",
-      input: baseCampTestnetTokens.wcamp,
-      output: baseCampTestnetTokens.usdc,
+      input: megaEthTestnetTokens.wcamp,
+      output: megaEthTestnetTokens.usdc,
       amount: "0.01"
     },
     { 
       name: "USDC → WCAMP (1.0)",
-      input: baseCampTestnetTokens.usdc,
-      output: baseCampTestnetTokens.wcamp,
+      input: megaEthTestnetTokens.usdc,
+      output: megaEthTestnetTokens.wcamp,
       amount: "1.0"
     },
   ];

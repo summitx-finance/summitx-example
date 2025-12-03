@@ -1,7 +1,7 @@
 import { SwapRouter } from "@summitx/smart-router/evm";
 import { Percent, TradeType } from "@summitx/swap-sdk-core";
 import { formatUnits, parseUnits } from "viem";
-import { baseCampTestnetTokens } from "../config/base-testnet";
+import { megaEthTestnetTokens } from "../config/megaeth-testnet";
 import { getContractsForChain } from "../config/chains";
 import { ChainId } from "@summitx/chains";
 import { TokenQuoter } from "../quoter/token-quoter";
@@ -10,10 +10,10 @@ import { logger } from "../utils/logger";
 async function testNativeSwap() {
   logger.header("🧪 Testing Native CAMP Swap");
 
-  const contracts = getContractsForChain(ChainId.BASECAMP);
+  const contracts = getContractsForChain(ChainId.MEGAETH_TESTNET);
 
   const quoter = new TokenQuoter({
-    rpcUrl: "https://rpc-campnetwork.xyz",
+    rpcUrl: "https://timothy.megaeth.com/mafia/rpc/n0m3q6w9e2r5t8y1u4i7o0p3a6s9d2f5g8h1j4k7",
     slippageTolerance: 1.0,
     maxHops: 2,
     maxSplits: 2,
@@ -26,8 +26,8 @@ async function testNativeSwap() {
   logger.info(`Getting quote for ${nativeAmount} CAMP → USDC`);
 
   const quote = await quoter.getQuote(
-    baseCampTestnetTokens.wcamp, // Use WCAMP token for native
-    baseCampTestnetTokens.usdc,
+    megaEthTestnetTokens.wcamp, // Use WCAMP token for native
+    megaEthTestnetTokens.usdc,
     nativeAmount,
     TradeType.EXACT_INPUT,
     false

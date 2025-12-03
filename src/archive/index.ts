@@ -1,6 +1,6 @@
 import { TradeType } from "@summitx/swap-sdk-core";
 import { config } from "dotenv";
-import { baseCampTestnetTokens } from "../config/base-testnet";
+import { megaEthTestnetTokens } from "../config/megaeth-testnet";
 import { TokenQuoter } from "../quoter/token-quoter";
 import { logger } from "../utils/logger";
 
@@ -12,7 +12,7 @@ async function main() {
 
   // Initialize quoter with options
   const quoter = new TokenQuoter({
-    rpcUrl: process.env.BASE_TESTNET_RPC_URL,
+    rpcUrl: process.env.MEGAETH_TESTNET_RPC_URL,
     maxHops: 3,
     maxSplits: 3,
     distributionPercent: 5,
@@ -22,8 +22,8 @@ async function main() {
   // Example 1: Simple swap quote (USDC → WETH)
   logger.header("Example 1: USDC → WETH Quote");
   const quote1 = await quoter.getQuote(
-    baseCampTestnetTokens.usdc,
-    baseCampTestnetTokens.weth,
+    megaEthTestnetTokens.usdc,
+    megaEthTestnetTokens.weth,
     "100", // 100 USDC
     TradeType.EXACT_INPUT
   );
@@ -44,8 +44,8 @@ async function main() {
   // Example 2: Reverse quote (WETH → USDC)
   logger.header("Example 2: WETH → USDC Quote");
   const quote2 = await quoter.getQuote(
-    baseCampTestnetTokens.weth,
-    baseCampTestnetTokens.usdc,
+    megaEthTestnetTokens.weth,
+    megaEthTestnetTokens.usdc,
     "0.1", // 0.1 WETH
     TradeType.EXACT_INPUT
   );
@@ -66,8 +66,8 @@ async function main() {
   // Example 3: Multi-hop quote (WBTC → USDC, potentially through WETH)
   logger.header("Example 3: WBTC → USDC Quote (Multi-hop)");
   const quote3 = await quoter.getQuote(
-    baseCampTestnetTokens.wbtc,
-    baseCampTestnetTokens.usdc,
+    megaEthTestnetTokens.wbtc,
+    megaEthTestnetTokens.usdc,
     "0.01", // 0.01 WBTC
     TradeType.EXACT_INPUT
   );
@@ -90,18 +90,18 @@ async function main() {
   logger.header("Example 4: Multiple Quotes");
   const batchQuotes = await quoter.getMultipleQuotes([
     {
-      inputToken: baseCampTestnetTokens.usdc,
-      outputToken: baseCampTestnetTokens.wbtc,
+      inputToken: megaEthTestnetTokens.usdc,
+      outputToken: megaEthTestnetTokens.wbtc,
       amount: "50",
     },
     {
-      inputToken: baseCampTestnetTokens.weth,
-      outputToken: baseCampTestnetTokens.dai,
+      inputToken: megaEthTestnetTokens.weth,
+      outputToken: megaEthTestnetTokens.dai,
       amount: "0.05",
     },
     {
-      inputToken: baseCampTestnetTokens.dai,
-      outputToken: baseCampTestnetTokens.usdc,
+      inputToken: megaEthTestnetTokens.dai,
+      outputToken: megaEthTestnetTokens.usdc,
       amount: "50",
     },
   ]);
@@ -124,8 +124,8 @@ async function main() {
   // Example 5: Exact output quote
   logger.header("Example 5: Exact Output Quote (Get exactly 100 USDC)");
   const quote5 = await quoter.getQuote(
-    baseCampTestnetTokens.weth,
-    baseCampTestnetTokens.usdc,
+    megaEthTestnetTokens.weth,
+    megaEthTestnetTokens.usdc,
     "100", // Want exactly 100 USDC output
     TradeType.EXACT_OUTPUT
   );
@@ -156,6 +156,6 @@ main().catch((error: any) => {
 });
 
 // Export for programmatic usage
-export { baseCampTestnetTokens } from "../config/base-testnet";
+export { megaEthTestnetTokens } from "../config/megaeth-testnet";
 export { TokenQuoter } from "../quoter/token-quoter";
 export { logger } from "../utils/logger";

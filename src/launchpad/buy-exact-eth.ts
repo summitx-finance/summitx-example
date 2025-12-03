@@ -1,8 +1,8 @@
 /**
  * Launchpad Trade Example: buyExactEth (Testnet)
- * Buy tokens with exact native CAMP amount
+ * Buy tokens with exact native ETH amount
  *
- * This example demonstrates buying tokens using native CAMP on the launchpad
+ * This example demonstrates buying tokens using native ETH on the launchpad
  * using the ReferralRouter contract's buyExactEth function.
  */
 
@@ -20,9 +20,9 @@ import {
 import { privateKeyToAccount } from "viem/accounts";
 import { REFERRAL_ROUTER_ABI } from "../config/abis";
 import {
-  basecampTestnet,
-  basecampTestnetLaunchpadToken,
-} from "../config/base-testnet";
+  megaethTestnet,
+  megaethTestnetLaunchpadToken,
+} from "../config/megaeth-testnet";
 import { getContractsForChain } from "../config/chains";
 import {
   getArgs,
@@ -36,10 +36,10 @@ config();
 
 async function main() {
   logger.header("🚀 Launchpad Trade: buyExactEth (Testnet)");
-  logger.info("Buying tokens with exact native CAMP amount");
+  logger.info("Buying tokens with exact native ETH amount");
   logger.divider();
 
-  const contracts = getContractsForChain(ChainId.BASECAMP);
+  const contracts = getContractsForChain(ChainId.MEGAETH_TESTNET);
 
   if (!process.env.PRIVATE_KEY) {
     logger.error("Please set PRIVATE_KEY in .env file");
@@ -49,48 +49,48 @@ async function main() {
   const account = privateKeyToAccount(process.env.PRIVATE_KEY as Hex);
 
   const publicClient = createPublicClient({
-    chain: basecampTestnet,
-    transport: http(basecampTestnet.rpcUrls.default.http[0]),
+    chain: megaethTestnet,
+    transport: http(megaethTestnet.rpcUrls.default.http[0]),
   });
 
   const walletClient = createWalletClient({
     account,
-    chain: basecampTestnet,
-    transport: http(basecampTestnet.rpcUrls.default.http[0]),
+    chain: megaethTestnet,
+    transport: http(megaethTestnet.rpcUrls.default.http[0]),
   });
 
   logger.info(`Wallet address: ${account.address}`);
 
   // Token to buy (example: USDC - replace with actual launchpad token)
-  const TOKEN_TO_BUY = basecampTestnetLaunchpadToken.DERP;
-  const NATIVE_TOKEN_SYMBOL = "CAMP";
+  const TOKEN_TO_BUY = megaethTestnetLaunchpadToken.MEOW;
+  const NATIVE_TOKEN_SYMBOL = "ETH";
 
   // Check native balance
   const nativeBalance = await publicClient.getBalance({
     address: account.address,
   });
   logger.info(
-    `Native CAMP balance: ${formatUnits(
+    `Native ETH balance: ${formatUnits(
       nativeBalance,
-      basecampTestnet.nativeCurrency.decimals
+      megaethTestnet.nativeCurrency.decimals
     )}`
   );
 
   if (
-    nativeBalance < parseUnits("0.1", basecampTestnet.nativeCurrency.decimals)
+    nativeBalance < parseUnits("0.1", megaethTestnet.nativeCurrency.decimals)
   ) {
-    logger.error("Insufficient CAMP balance. Need at least 0.1 CAMP");
+    logger.error("Insufficient ETH balance. Need at least 0.1 ETH");
     process.exit(1);
   }
 
   try {
     await delay(2000);
 
-    // Define buy amount (native CAMP to spend)
-    const buyAmount = "0.01"; // 0.01 CAMP
+    // Define buy amount (native ETH to spend)
+    const buyAmount = "0.01"; // 0.01 ETH
 
     logger.info(
-      `Getting launchpad quote for ${buyAmount} CAMP → ${TOKEN_TO_BUY.symbol}...`
+      `Getting launchpad quote for ${buyAmount} ETH → ${TOKEN_TO_BUY.symbol}...`
     );
 
     // Get launchpad quote
@@ -105,7 +105,7 @@ async function main() {
     );
 
     logger.success("Launchpad quote received:", {
-      input: `${buyAmount} CAMP`,
+      input: `${buyAmount} ETH`,
       output: `${quote.amountOutToken.toString()} ${TOKEN_TO_BUY.symbol}`,
       amountInEth: quote.amountInEth.toString(),
       amountOutToken: quote.amountOutToken.toString(),
@@ -167,7 +167,7 @@ async function main() {
       abi: REFERRAL_ROUTER_ABI,
       functionName: functionName as any,
       args: args as any,
-      value: nativeValue as bigint, // Send native CAMP
+      value: nativeValue as bigint, // Send native ETH
     } as any);
 
     logger.info(`Transaction sent: ${txHash}`);

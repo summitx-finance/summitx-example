@@ -1,8 +1,8 @@
 import { config } from "dotenv"
 import { TradeType } from "@summitx/swap-sdk-core"
-import { TokenQuoter } from "./quoter/token-quoter"
-import { baseCampTestnetTokens } from "./config/base-testnet"
-import { logger } from "./utils/logger"
+import { TokenQuoter } from "../quoter/token-quoter"
+import { megaEthTestnetTokens } from "../config/megaeth-testnet"
+import { logger } from "../utils/logger"
 
 // Load environment variables
 config()
@@ -12,7 +12,7 @@ async function main() {
 
   // Initialize token quoter with smart router (same as UI)
   const quoter = new TokenQuoter({
-    rpcUrl: "https://rpc-campnetwork.xyz/8708df38d9cc4bb39ac813ae005be495",
+    rpcUrl: "https://timothy.megaeth.com/mafia/rpc/n0m3q6w9e2r5t8y1u4i7o0p3a6s9d2f5g8h1j4k7/8708df38d9cc4bb39ac813ae005be495",
     slippageTolerance: 0.5, // 0.5% slippage
     maxHops: 3,
     maxSplits: 3,
@@ -25,8 +25,8 @@ async function main() {
   
   try {
     const quote = await quoter.getQuote(
-      baseCampTestnetTokens.usdc,
-      baseCampTestnetTokens.weth,
+      megaEthTestnetTokens.usdc,
+      megaEthTestnetTokens.weth,
       "1000000", // 1 USDC (6 decimals)
       TradeType.EXACT_INPUT,
       true // shouldAdjustQuoteForGas
@@ -56,19 +56,19 @@ async function main() {
   }
 
   // Test WBTC to DAI quote
-  logger.info("Testing WBTC → DAI quote...")
+  logger.info("Testing WETH → DAI quote...")
   
   try {
     const quote = await quoter.getQuote(
-      baseCampTestnetTokens.wbtc,
-      baseCampTestnetTokens.dai,
+      megaEthTestnetTokens.weth,
+      megaEthTestnetTokens.dai,
       "1000000000000000000", // 1 WBTC (18 decimals)
       TradeType.EXACT_INPUT,
       true // shouldAdjustQuoteForGas
     )
 
     if (quote) {
-      logger.success("✅ WBTC → DAI Quote Found!", {
+      logger.success("✅ WETH → DAI Quote Found!", {
         inputAmount: quote.inputAmount,
         outputAmount: quote.outputAmount,
         priceImpact: quote.priceImpact,
@@ -80,13 +80,13 @@ async function main() {
         routerTime: quote.routerTime,
       })
     } else {
-      logger.warn("❌ No route found for WBTC → DAI")
+      logger.warn("❌ No route found for WETH → DAI")
     }
   } catch (error: any) {
     if (error?.message?.includes("429")) {
       logger.error("❌ Rate limited - try again later");
     } else {
-      logger.error("❌ Error getting WBTC → DAI quote:", error?.message || error);
+      logger.error("❌ Error getting WETH → DAI quote:", error?.message || error);
     }
   }
 
@@ -95,8 +95,8 @@ async function main() {
   
   try {
     const quote = await quoter.getQuote(
-      baseCampTestnetTokens.usdt,
-      baseCampTestnetTokens.usdc,
+      megaEthTestnetTokens.usdt,
+      megaEthTestnetTokens.usdc,
       "1000000", // 1 USDT (6 decimals)
       TradeType.EXACT_INPUT,
       true // shouldAdjustQuoteForGas
@@ -140,6 +140,6 @@ main().catch((error: any) => {
 })
 
 // Export for programmatic usage
-export { TokenQuoter } from "./quoter/token-quoter"
-export { baseCampTestnetTokens } from "./config/base-testnet"
-export { logger } from "./utils/logger"
+export { TokenQuoter } from "../quoter/token-quoter"
+export {  megaEthTestnetTokens } from "../config/megaeth-testnet"
+export { logger } from "../utils/logger"
