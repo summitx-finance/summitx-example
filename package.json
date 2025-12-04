@@ -66,7 +66,9 @@
     "mainnet:referral:get": "tsx src/referral/referral-system-mainnet.ts get",
     "mainnet:referral:register": "tsx src/referral/referral-system-mainnet.ts register",
     "mainnet:referral:apply": "tsx src/referral/referral-system-mainnet.ts apply",
-    "mainnet:referral:check": "tsx src/referral/referral-system-mainnet.ts check"
+    "mainnet:referral:check": "tsx src/referral/referral-system-mainnet.ts check",
+    "test:testnet": "tsx src/test-all-testnet.ts",
+    "test:mainnet": "tsx src/test-all-mainnet.ts"
   },
   "dependencies": {
     "@summitx/chains": "0.1.2",
